@@ -106,8 +106,8 @@ logger.info(f"CORS allowed origins: {cors_origins}")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
-    # Support all Vercel deployment subdomains (+ preview links)
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    # Support all Vercel and Ngrok deployment domains
+    allow_origin_regex=r"https://.*\.vercel\.app|https://.*\.ngrok-free\.(dev|app)",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*", "ngrok-skip-browser-warning", "Authorization"],
