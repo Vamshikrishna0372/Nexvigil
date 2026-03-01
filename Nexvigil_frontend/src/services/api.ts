@@ -4,20 +4,23 @@
  * Centralized API abstraction for backend operations.
  */
 
-// Fallback to localhost:8000 only if no environment variable is provided
-// NOTE: For production (e.g. Vercel), the VITE_API_BASE_URL secret must be set in the dashbord.
 const getApiBase = () => {
+  // 1. Highest priority: The explicit environment variable
   const envUrl = import.meta.env.VITE_API_BASE_URL;
-  if (envUrl) return envUrl.replace(/\/$/, "");
-
-  // Production safeguard: If on vercel/production and no API URL is set, we use a placeholder or relative path
-  // but for Nexvigil, we definitely need the backend URL (often ngrok).
-  if (window.location.hostname.includes("vercel.app")) {
-    console.warn("VITE_API_BASE_URL is missing. API calls will likely fail. Please set it in Vercel settings.");
-    return "/api/v1"; // Fallback to relative to avoid HTTPS/HTTP mismatch
+  if (envUrl) {
+    return envUrl.replace(/\/$/, "");
   }
 
-  return `http://${window.location.hostname}:8000/api/v1`;
+  // 2. Local development fallback
+  if (import.meta.env.DEV) {
+    return "http://localhost:8000/api/v1";
+  }
+
+  // 3. Production safeguard: NEVER default to localhost:8000 on Vercel or other platforms.
+  // We use relative path as a final fallback which browsers resolve correctly to HTTPS if the frontend is HTTPS.
+  // Note: This requires Vercel to proxy /api/v1 to the backend, OR the user to set VITE_API_BASE_URL.
+  console.warn("VITE_API_BASE_URL is missing. Using relative fallback /api/v1");
+  return "/api/v1";
 };
 
 export const API_BASE = getApiBase();
@@ -68,10 +71,13 @@ export const api = {
         body: formData,
       }).then(async res => {
         if (!res.ok) {
-          const err = await res.json();
-          return { data: null, error: err.detail || "Login failed" };
+          const body = await res.json().catch(() => ({}));
+          return { data: null, error: body.detail || body.message || `Login failed (${res.status})` };
         }
         return { data: await res.json(), error: null };
+      }).catch(err => {
+        console.error("Login Fetch Error:", err);
+        return { data: null, error: "Network error or Mixed Content blocked. Ensure backend is HTTPS." };
       });
     },
     register: (name: string, email: string, password: string) =>
