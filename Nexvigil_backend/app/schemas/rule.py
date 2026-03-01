@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
+from pydantic import BaseModel, Field, model_validator
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 class TimeRestriction(BaseModel):
@@ -19,10 +19,10 @@ class RuleBase(BaseModel):
     recording_enabled: bool = False
     recording_duration: int = 30
     
-    # Advanced / Specific Rules
-    zone_coordinates: Optional[List[Dict[str, float]]] = None # [{"x": 10, "y": 20}, ...]
-    frequency_threshold: Optional[int] = None # e.g. "if > 5 people context -> Crowd Alert"
-    camera_ids: Optional[List[str]] = None # Empty array means applies to all cameras
+    # Advanced options
+    zone_coordinates: Optional[List[Dict[str, float]]] = None
+    frequency_threshold: Optional[int] = None
+    camera_ids: Optional[List[str]] = None
 
 class RuleCreate(RuleBase):
     pass
@@ -38,13 +38,23 @@ class RuleUpdate(BaseModel):
     time_restriction: Optional[TimeRestriction] = None
     recording_enabled: Optional[bool] = None
     recording_duration: Optional[int] = None
-    active: Optional[bool] = None # Alias for is_active from UI
 
 class RuleResponse(RuleBase):
-    id: str = Field(alias="_id")
+    id: str = ""
     owner_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_id(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            # Accept both 'id' and '_id' from MongoDB documents
+            if not data.get("id") and data.get("_id"):
+                data["id"] = str(data["_id"])
+            elif data.get("id"):
+                data["id"] = str(data["id"])
+        return data
 
     class Config:
         populate_by_name = True

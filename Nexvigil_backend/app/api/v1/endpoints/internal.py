@@ -216,7 +216,10 @@ async def get_active_rules(
     authorized: bool = Depends(deps.validate_internal_api_key)
 ):
     """
-    Get list of active detection rules for AI processing.
+    Get list of ONLY active detection rules for AI processing.
+    This endpoint is called exclusively by the AI agent every 15 seconds.
+    Only rules with is_active=True are returned, ensuring disabled rules
+    do not trigger any detections or alerts.
     """
     from app.services.rule_service import rule_service
-    return await rule_service.get_rules()
+    return await rule_service.get_active_rules()

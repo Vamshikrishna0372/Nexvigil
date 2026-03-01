@@ -33,6 +33,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       ...options,
       headers: {
         "Content-Type": "application/json",
+        // Required when backend is exposed via ngrok — prevents HTML interstitial page
+        // from being returned instead of JSON on first visit.
+        "ngrok-skip-browser-warning": "true",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
@@ -120,6 +123,8 @@ export const api = {
       request("/rules/", { method: "POST", body: JSON.stringify(data) }),
     update: (id: string, data: any) =>
       request(`/rules/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    toggle: (id: string, is_active: boolean) =>
+      request(`/rules/${id}/toggle`, { method: "PATCH", body: JSON.stringify({ is_active }) }),
     delete: (id: string) =>
       request(`/rules/${id}`, { method: "DELETE" }),
   },
