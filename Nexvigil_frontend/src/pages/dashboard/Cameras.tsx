@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/services/api";
+import { api, API_BASE } from "@/services/api";
 import { cn } from "@/lib/utils";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,10 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const LiveStreamView = ({ cameraId }: { cameraId: string }) => {
   const [status, setStatus] = useState<"loading" | "live" | "error">("loading");
   const imgRef = useRef<HTMLImageElement>(null);
-  const apiBase = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000/api/v1`;
-
-  // Build stream URL — add cache-bust so switching cameras always reloads
-  const streamUrl = `${apiBase}/cameras/${cameraId}/stream?_=${cameraId}`;
+  const streamUrl = `${API_BASE}/cameras/${cameraId}/stream?_=${cameraId}`;
 
   // When cameraId changes, reset to loading
   useEffect(() => {

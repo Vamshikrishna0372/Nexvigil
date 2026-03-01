@@ -4,9 +4,23 @@
  * Centralized API abstraction for backend operations.
  */
 
-// Dynamically resolve API base: use env var if set, otherwise use the same hostname
-// the browser loaded from (critical for mobile/LAN access where localhost won't work)
-const API_BASE = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000/api/v1`;
+// Fallback to localhost:8000 only if no environment variable is provided
+// NOTE: For production (e.g. Vercel), the VITE_API_BASE_URL secret must be set in the dashbord.
+const getApiBase = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl) return envUrl.replace(/\/$/, "");
+
+  // Production safeguard: If on vercel/production and no API URL is set, we use a placeholder or relative path
+  // but for Nexvigil, we definitely need the backend URL (often ngrok).
+  if (window.location.hostname.includes("vercel.app")) {
+    console.warn("VITE_API_BASE_URL is missing. API calls will likely fail. Please set it in Vercel settings.");
+    return "/api/v1"; // Fallback to relative to avoid HTTPS/HTTP mismatch
+  }
+
+  return `http://${window.location.hostname}:8000/api/v1`;
+};
+
+export const API_BASE = getApiBase();
 
 // Generic fetch wrapper with auth
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<{ data: T | null; error: string | null }> {

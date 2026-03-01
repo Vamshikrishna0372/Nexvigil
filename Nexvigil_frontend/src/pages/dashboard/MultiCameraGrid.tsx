@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { API_BASE } from "@/services/api";
 
 // ─── Reusable Individual Camera Card ──────────────────────────────────────────
 const CameraGridCard = ({ cam, isAdmin }: { cam: any; isAdmin: boolean }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const apiBase = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000/api/v1`;
+  const streamUrl = `${API_BASE}/cameras/${cam.id}/stream`;
 
   const toggleFullscreen = useCallback(() => {
     const el = containerRef.current;
@@ -44,7 +45,7 @@ const CameraGridCard = ({ cam, isAdmin }: { cam: any; isAdmin: boolean }) => {
             <>
               {/* Native MJPEG Stream — NO REFRESH KEY NEEDED */}
               <img
-                src={`${apiBase}/cameras/${cam.id}/stream`}
+                src={streamUrl}
                 alt={cam.camera_name}
                 className="w-full h-full object-contain"
                 loading="lazy"

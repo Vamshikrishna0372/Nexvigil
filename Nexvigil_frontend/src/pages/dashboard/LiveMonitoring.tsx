@@ -17,7 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/services/api";
+import { api, API_BASE } from "@/services/api";
 import { LoadingState } from "@/components/ui/LoadingState";
 
 // ─── Optimized Stream Player (Header-aware) ──────────────────────────────────
@@ -25,7 +25,7 @@ const StableStreamViewer = ({ cameraId, cameraName }: { cameraId: string; camera
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const apiBase = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:8000/api/v1`;
+  const streamUrl = `${API_BASE}/cameras/${cameraId}/stream`;
 
   const toggleFullscreen = useCallback(() => {
     const el = containerRef.current;
@@ -50,7 +50,7 @@ const StableStreamViewer = ({ cameraId, cameraName }: { cameraId: string; camera
       {!isMinimized ? (
         <div className="relative group w-full h-full">
           <img
-            src={`${apiBase}/cameras/${cameraId}/stream`}
+            src={streamUrl}
             alt={cameraName}
             className="w-full h-full object-contain"
             loading="eager"
