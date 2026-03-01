@@ -96,16 +96,18 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(RequestLoggingMiddleware)
 
 # CORS Configuration
-# Note: allow_credentials=True requires explicit origins (cannot be ["*"])
+# Note: allow_credentials=True requires explicit origins OR allow_origin_regex
 cors_origins = settings.all_cors_origins
 if not cors_origins:
-    cors_origins = ["https://nexvigil.vercel.app"] # Safe default
+    cors_origins = ["https://nexvigil.vercel.app"]
 
 logger.info(f"CORS allowed origins: {cors_origins}")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
+    # Support all Vercel deployment subdomains (+ preview links)
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*", "ngrok-skip-browser-warning", "Authorization"],
@@ -131,9 +133,14 @@ async def global_exception_handler(request: Request, exc: Exception):
     headers = {}
     if settings.ENVIRONMENT == "development" and origin:
         headers["Access-Control-Allow-Origin"] = origin
-    elif origin in settings.all_cors_origins:
-        headers["Access-Control-Allow-Origin"] = origin
-        headers["Access-Control-Allow-Credentials"] = "true"
+    elif origin:
+        # Check if origin is in explicit list or matches Vercel pattern
+        is_allowed = origin in settings.all_cors_origins or origin.endswith(".vercel.app")
+        if is_allowed:
+            headers["Access-Control-Allow-Origin"] = origin
+            headers["Access-Control-Allow-Credentials"] = "true"
+            # Important: Allow the ngrok skip header to be exposed/used
+            headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, ngrok-skip-browser-warning"
         
     return JSONResponse(
         status_code=500,

@@ -60,6 +60,8 @@ class Settings(BaseSettings):
             origins.append(self.NGROK_URL.rstrip("/"))
         if self.FRONTEND_URL:
             origins.append(self.FRONTEND_URL.rstrip("/"))
+        # Hardcoded safety for common Vercel/Local patterns if needed
+        # origins.append("https://nexvigil.vercel.app") 
         return list(set(origins))  # deduplicate
 
     class Config:
