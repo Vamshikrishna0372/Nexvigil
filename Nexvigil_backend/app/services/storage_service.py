@@ -13,15 +13,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 class StorageService:
-    recordings_dir = "recordings"
-    screenshots_dir = "screenshots"
+    recordings_dir = "alerts"
+    screenshots_dir = "alerts"
     stats_collection = "storage_stats"
     
     def __init__(self):
         # Create root media dir if not exists
         os.makedirs(settings.MEDIA_DIR, exist_ok=True)
-        os.makedirs(os.path.join(settings.MEDIA_DIR, self.recordings_dir), exist_ok=True)
-        os.makedirs(os.path.join(settings.MEDIA_DIR, self.screenshots_dir), exist_ok=True)
+        os.makedirs(os.path.join(settings.MEDIA_DIR, "alerts"), exist_ok=True)
 
     async def get_storage_stats(self, user_id: str) -> StorageStats:
         if not user_id:

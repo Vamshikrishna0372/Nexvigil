@@ -17,15 +17,8 @@ class Settings(BaseSettings):
     # Example: https://nexvigil.vercel.app
     FRONTEND_URL: Optional[str] = None
 
-    # Static CORS origins (always included)
-    CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://localhost:8080",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:8080",
-    ]
+    # Static CORS origins (will be populated via env)
+    CORS_ORIGINS: List[str] = []
 
     LOG_LEVEL: str = "INFO"
     JWT_ALGORITHM: str = "HS256"
@@ -52,7 +45,7 @@ class Settings(BaseSettings):
             return self.NGROK_URL.rstrip("/")
         # If in production and FRONTEND_URL exists, we might still want BASE_URL to point to backend.
         # But usually in this setup, NGROK_URL is the backend.
-        return "http://localhost:8000"
+        return "https://api-placeholder.nexvigil.com"
 
     @property
     def all_cors_origins(self) -> List[str]:

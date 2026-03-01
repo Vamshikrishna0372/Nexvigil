@@ -5,26 +5,23 @@
  */
 
 const getApiBase = () => {
-  // 1. Highest priority: The explicit environment variable
   const envUrl = import.meta.env.VITE_API_BASE_URL;
-  if (envUrl) {
-    let base = envUrl.replace(/\/$/, "");
-    if (!base.endsWith("/api/v1")) {
-      base = `${base}/api/v1`;
+
+  if (!envUrl) {
+    if (import.meta.env.DEV) {
+      console.warn("VITE_API_BASE_URL is missing. Please set it in .env");
+    } else {
+      console.error("CRITICAL: VITE_API_BASE_URL is missing in production!");
     }
-    return base;
+    // Final fallback that allows relative resolution if backend is proxied
+    return "/api/v1";
   }
 
-  // 2. Local development fallback
-  if (import.meta.env.DEV) {
-    return "http://localhost:8000/api/v1";
+  let base = envUrl.replace(/\/$/, "");
+  if (!base.endsWith("/api/v1")) {
+    base = `${base}/api/v1`;
   }
-
-  // 3. Production safeguard: NEVER default to localhost:8000 on Vercel or other platforms.
-  // We use relative path as a final fallback which browsers resolve correctly to HTTPS if the frontend is HTTPS.
-  // Note: This requires Vercel to proxy /api/v1 to the backend, OR the user to set VITE_API_BASE_URL.
-  console.warn("VITE_API_BASE_URL is missing. Using relative fallback /api/v1");
-  return "/api/v1";
+  return base;
 };
 
 export const API_BASE = getApiBase();

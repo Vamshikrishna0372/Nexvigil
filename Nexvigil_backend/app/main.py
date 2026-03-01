@@ -63,8 +63,7 @@ async def lifespan(app: FastAPI):
         from pathlib import Path
         media_root = Path(settings.MEDIA_DIR)
         media_root.mkdir(parents=True, exist_ok=True)
-        (media_root / "recordings").mkdir(parents=True, exist_ok=True)
-        (media_root / "screenshots").mkdir(parents=True, exist_ok=True)
+        (media_root / "alerts").mkdir(parents=True, exist_ok=True)
         (media_root / "live").mkdir(parents=True, exist_ok=True)
         
         await db.connect_to_database()
@@ -96,16 +95,20 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Add custom request logging middleware FIRST (so CORS wraps it)
 app.add_middleware(RequestLoggingMiddleware)
 
-# CORS: dynamically built from static origins + NGROK_URL + FRONTEND_URL env vars
-# In development, allow all so localhost, LAN, and ngrok all work out of the box
-cors_origins = ["*"] if settings.ENVIRONMENT == "development" else settings.all_cors_origins
+# CORS Configuration
+# Note: allow_credentials=True requires explicit origins (cannot be ["*"])
+cors_origins = settings.all_cors_origins
+if not cors_origins:
+    cors_origins = ["https://nexvigil.vercel.app"] # Safe default
+
 logger.info(f"CORS allowed origins: {cors_origins}")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
-    allow_credentials=True if settings.ENVIRONMENT != "development" else False,
+    allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*", "ngrok-skip-browser-warning"],
+    allow_headers=["*", "ngrok-skip-browser-warning", "Authorization"],
     expose_headers=["Content-Range", "Accept-Ranges", "Content-Length"],
 )
 
