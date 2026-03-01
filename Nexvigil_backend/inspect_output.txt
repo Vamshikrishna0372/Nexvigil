@@ -1,0 +1,42 @@
+Connected to db: nexvigil
+Total alerts with media (limited to 10): 10
+ID=69a1e5598c37d97ddec8a94a
+  video: None
+  screenshot: screenshots/69a08d6e06e0120307a66d83/001127.jpg
+  created_at: 2026-02-27 18:41:29.200000
+ID=69a1e5488c37d97ddec8a947
+  video: None
+  screenshot: screenshots/69a08d6e06e0120307a66d83/001108.jpg
+  created_at: 2026-02-27 18:41:12.795000
+ID=69a1e3528c37d97ddec8a944
+  video: None
+  screenshot: screenshots/69a08d6e06e0120307a66d83/000248.jpg
+  created_at: 2026-02-27 18:32:50.352000
+ID=69a1e3488c37d97ddec8a941
+  video: None
+  screenshot: screenshots/69a08d6e06e0120307a66d83/000238.jpg
+  created_at: 2026-02-27 18:32:40.211000
+ID=69a1e33d8c37d97ddec8a93e
+  video: None
+  screenshot: screenshots/69a08d6e06e0120307a66d83/000227.jpg
+  created_at: 2026-02-27 18:32:29.719000
+ID=69a1e3338c37d97ddec8a93b
+  video: None
+  screenshot: screenshots/69a08d6e06e0120307a66d83/000217.jpg
+  created_at: 2026-02-27 18:32:19.673000
+ID=69a1e3298c37d97ddec8a938
+  video: None
+  screenshot: screenshots/69a08d6e06e0120307a66d83/000207.jpg
+  created_at: 2026-02-27 18:32:09.286000
+ID=69a1e31e8c37d97ddec8a935
+  video: None
+  screenshot: screenshots/69a08d6e06e0120307a66d83/000156.jpg
+  created_at: 2026-02-27 18:31:58.195000
+ID=69a1e3148c37d97ddec8a932
+  video: None
+  screenshot: screenshots/69a08d6e06e0120307a66d83/000146.jpg
+  created_at: 2026-02-27 18:31:48.143000
+ID=69a1e30a8c37d97ddec8a92f
+  video: None
+  screenshot: screenshots/69a08d6e06e0120307a66d83/000136.jpg
+  created_at: 2026-02-27 18:31:38.091000

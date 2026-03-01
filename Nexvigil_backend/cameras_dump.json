@@ -1,0 +1,30 @@
+[
+  {
+    "_id": "69975cf679253cbf28e1795e",
+    "camera_name": "Phone",
+    "camera_url": "http://192.168.0.117:8080",
+    "location": "B",
+    "description": null,
+    "owner_id": "6997523222921a8f16e15ca5",
+    "organization_id": null,
+    "status": "inactive",
+    "health_status": "unknown",
+    "last_active": null,
+    "created_at": "2026-02-19T18:56:54.790000",
+    "updated_at": "2026-02-23T11:18:12.584000"
+  },
+  {
+    "_id": "69976176a578a5a0ff9791fb",
+    "camera_name": "me",
+    "camera_url": "0",
+    "location": "laptop",
+    "description": null,
+    "owner_id": "6997523222921a8f16e15ca5",
+    "organization_id": null,
+    "status": "inactive",
+    "health_status": "unknown",
+    "last_active": null,
+    "created_at": "2026-02-19T19:16:06.045000",
+    "updated_at": "2026-02-23T11:23:44.082000"
+  }
+]

@@ -1,0 +1,6 @@
+Checking latest video: media/recordings\69a08d6e06e0120307a66d83\20260228_002207.mp4
+File size: 61322 bytes
+Resolution: 640.0x480.0
+FPS: 15.0
+Frame Count: 60.0
+First frame read successfully: True

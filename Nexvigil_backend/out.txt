@@ -1,0 +1,10 @@
+--- USERS ---
+User: admin@nexvigil.com | ID: 69973ffd96edc1a238736ecb
+User: Krish@gmail.com | ID: 6997523222921a8f16e15ca5
+User: test@example.com | ID: 69a2dee7bba0cba87105c605
+User: nagulavamshi1453@gmail.com | ID: 69a2ece93842d7b58037c0d4
+
+--- ALERTS ---
+Alert ID: 69a1f2d58ed2ede678caec8e | OwnerID: 6997523222921a8f16e15ca5
+Alert ID: 69a1f2df8ed2ede678caec91 | OwnerID: 6997523222921a8f16e15ca5
+Alert ID: 69a1f48f8ed2ede678caec94 | OwnerID: 6997523222921a8f16e15ca5

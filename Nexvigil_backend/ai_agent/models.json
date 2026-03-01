@@ -1,0 +1,8 @@
+[
+    {
+        "model_name": "yolov8n",
+        "version": "default",
+        "file_path": "yolov8n.pt",
+        "status": "active"
+    }
+]

@@ -1,0 +1,15 @@
+--- USERS ---
+User: admin@nexvigil.com | ID: 69973ffd96edc1a238736ecb
+User: Krish@gmail.com | ID: 6997523222921a8f16e15ca5
+User: test@example.com | ID: 69a2dee7bba0cba87105c605
+User: nagulavamshi1453@gmail.com | ID: 69a2ece93842d7b58037c0d4
+
+--- CAMERAS ---
+Cam: meh | Owner: 6997523222921a8f16e15ca5 | Status: inactive
+Cam: lab | Owner: 6997523222921a8f16e15ca5 | Status: inactive
+Cam: phone | Owner: 6997523222921a8f16e15ca5 | Status: inactive
+Cam: meh | Owner: 69a2ece93842d7b58037c0d4 | Status: inactive
+
+--- ALERTS PER OWNER ---
+Owner: 6997523222921a8f16e15ca5 | count: 50
+Owner: 69a2ece93842d7b58037c0d4 | count: 24

@@ -1,0 +1,4 @@
+Email: admin@nexvigil.com | Role: admin
+Email: Krish@gmail.com | Role: user
+Email: test@example.com | Role: user
+Email: nagulavamshi1453@gmail.com | Role: user

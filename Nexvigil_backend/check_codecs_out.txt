@@ -1,0 +1,4 @@
+Codec avc1 is SUPPORTED
+Codec mp4v is SUPPORTED
+Codec XVID is SUPPORTED
+Codec H264 is SUPPORTED

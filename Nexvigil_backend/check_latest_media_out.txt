@@ -1,0 +1,10 @@
+Connected to database: nexvigil
+Latest alert with video:
+  ID: 69a1e7d98349603bf93c3192
+  Object: person
+  Screenshot Path: screenshots/69a08d6e06e0120307a66d83/20260228_002207.jpg
+  Video Path: recordings/69a08d6e06e0120307a66d83/20260228_002207.mp4
+  Created At: 2026-02-27 18:52:09.225000
+  Screenshot file exists: True (media\screenshots/69a08d6e06e0120307a66d83/20260228_002207.jpg)
+  Video file exists: True (media\recordings/69a08d6e06e0120307a66d83/20260228_002207.mp4)
+  Video file size: 61322 bytes

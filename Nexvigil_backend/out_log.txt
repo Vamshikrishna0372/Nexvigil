@@ -1,0 +1,19 @@
+[00:10:23] INFO: Terminated old agent process (PID: 26112)
+[00:10:28] INFO: YOLOv8n warmed up successfully
+[00:10:28] INFO: Starting Nexvigil AI Engine (ULTRA SMOOTH VERSION)...
+[00:10:33] INFO: Active cameras found: 3
+[00:10:33] INFO: Starting worker for camera: meh (69a08d6e06e0120307a66d83)
+[00:10:33] INFO: [meh] Worker init for 0
+[00:10:33] INFO: Starting worker for camera: lab (69a12389ca084a35fffd4e5d)
+[00:10:33] INFO: [lab] Worker init for https://192.168.137.252:8080/video
+[00:10:33] INFO: Starting worker for camera: phone (69a185faa2886142f941a990)
+[00:10:33] INFO: [phone] Worker init for http://192.168.0.117:8080/video
+[00:10:33] INFO: [meh] Capture thread: Connecting to 0...
+[00:10:33] INFO: [lab] Capture thread: Connecting to https://192.168.137.252:8080/video...
+[00:10:33] INFO: [phone] Capture thread: Connecting to http://192.168.0.117:8080/video...
+[00:10:33] INFO: [meh] Camera opened successfully.
+[00:10:47] INFO: Active cameras found: 3
+[00:10:57] ERROR: [phone] FAILED to open source http://192.168.0.117:8080/video
+[00:10:57] INFO: [phone] Capture thread exiting.
+[00:10:57] INFO: [phone] Worker shutting down
+[00:10:57] INFO: [phone] Write thread exiting.

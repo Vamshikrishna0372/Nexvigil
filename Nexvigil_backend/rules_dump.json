@@ -1,0 +1,293 @@
+[
+  {
+    "_id": "69a12fec274a06172022149f",
+    "rule_name": "Armed Threat Detection",
+    "is_active": true,
+    "target_classes": [
+      "knife",
+      "scissors"
+    ],
+    "min_confidence": 0.35,
+    "persistence_seconds": 0,
+    "cooldown_seconds": 60,
+    "severity": "critical",
+    "time_restriction": {
+      "enabled": false,
+      "start_time": "00:00",
+      "end_time": "23:59"
+    },
+    "recording_enabled": true,
+    "recording_duration": 30,
+    "created_at": "2026-02-27 05:47:22.339000",
+    "updated_at": "2026-02-27 05:47:22.339000"
+  },
+  {
+    "_id": "69a12fec274a0617202214a0",
+    "rule_name": "Night Perimeter Breach",
+    "is_active": true,
+    "target_classes": [
+      "person"
+    ],
+    "min_confidence": 0.5,
+    "persistence_seconds": 2,
+    "cooldown_seconds": 300,
+    "severity": "high",
+    "time_restriction": {
+      "enabled": true,
+      "start_time": "22:00",
+      "end_time": "06:00"
+    },
+    "recording_enabled": true,
+    "recording_duration": 15,
+    "created_at": "2026-02-27 05:47:22.340000",
+    "updated_at": "2026-02-27 05:47:22.340000"
+  },
+  {
+    "_id": "69a12fec274a0617202214a1",
+    "rule_name": "Suspicious Loitering",
+    "is_active": true,
+    "target_classes": [
+      "person"
+    ],
+    "min_confidence": 0.6,
+    "persistence_seconds": 15,
+    "cooldown_seconds": 600,
+    "severity": "medium",
+    "time_restriction": {
+      "enabled": false,
+      "start_time": "00:00",
+      "end_time": "23:59"
+    },
+    "recording_enabled": true,
+    "recording_duration": 20,
+    "created_at": "2026-02-27 05:47:22.340000",
+    "updated_at": "2026-02-27 05:47:22.340000"
+  },
+  {
+    "_id": "69a12fec274a0617202214a2",
+    "rule_name": "Vehicle Intrusion",
+    "is_active": true,
+    "target_classes": [
+      "car",
+      "motorcycle",
+      "truck"
+    ],
+    "min_confidence": 0.7,
+    "persistence_seconds": 5,
+    "cooldown_seconds": 120,
+    "severity": "low",
+    "time_restriction": {
+      "enabled": false,
+      "start_time": "00:00",
+      "end_time": "23:59"
+    },
+    "recording_enabled": false,
+    "recording_duration": 0,
+    "created_at": "2026-02-27 05:47:22.340000",
+    "updated_at": "2026-02-27 05:47:22.341000"
+  },
+  {
+    "_id": "69a12fec274a0617202214a3",
+    "rule_name": "Unattended Baggage",
+    "is_active": true,
+    "target_classes": [
+      "backpack",
+      "suitcase",
+      "handbag"
+    ],
+    "min_confidence": 0.5,
+    "persistence_seconds": 30,
+    "cooldown_seconds": 1800,
+    "severity": "medium",
+    "time_restriction": {
+      "enabled": false,
+      "start_time": "00:00",
+      "end_time": "23:59"
+    },
+    "recording_enabled": true,
+    "recording_duration": 10,
+    "created_at": "2026-02-27 05:47:22.341000",
+    "updated_at": "2026-02-27 05:47:22.341000"
+  },
+  {
+    "_id": "69a131c20bd2fcb02ab45521",
+    "rule_name": "Emergency: Cold Weapon Detected",
+    "is_active": true,
+    "target_classes": [
+      "knife",
+      "scissors"
+    ],
+    "min_confidence": 0.45,
+    "persistence_seconds": 0,
+    "cooldown_seconds": 30,
+    "severity": "critical",
+    "recording_enabled": true,
+    "recording_duration": 60,
+    "description": "Immediate alert for bladed weapons in view.",
+    "owner_id": "69973ffd96edc1a238736ecb",
+    "created_at": "2026-02-27 05:55:14.515000",
+    "updated_at": "2026-02-27 05:55:14.515000",
+    "active": true
+  },
+  {
+    "_id": "69a131c20bd2fcb02ab45522",
+    "rule_name": "Unauthorized Intrusion (After Hours)",
+    "is_active": true,
+    "target_classes": [
+      "person"
+    ],
+    "min_confidence": 0.55,
+    "persistence_seconds": 1,
+    "cooldown_seconds": 60,
+    "severity": "high",
+    "time_restriction": {
+      "enabled": true,
+      "start_time": "22:00",
+      "end_time": "06:00"
+    },
+    "recording_enabled": true,
+    "recording_duration": 30,
+    "description": "Alerts for any person detected during late night hours.",
+    "owner_id": "69973ffd96edc1a238736ecb",
+    "created_at": "2026-02-27 05:55:14.685000",
+    "updated_at": "2026-02-27 05:55:14.685000",
+    "active": true
+  },
+  {
+    "_id": "69a131c20bd2fcb02ab45523",
+    "rule_name": "Suspicious Loitering Detected",
+    "is_active": true,
+    "target_classes": [
+      "person"
+    ],
+    "min_confidence": 0.65,
+    "persistence_seconds": 10,
+    "cooldown_seconds": 300,
+    "severity": "medium",
+    "recording_enabled": true,
+    "recording_duration": 15,
+    "description": "Triggered when a person remains in the frame for more than 10 seconds.",
+    "owner_id": "69973ffd96edc1a238736ecb",
+    "created_at": "2026-02-27 05:55:14.734000",
+    "updated_at": "2026-02-27 05:55:14.734000",
+    "active": true
+  },
+  {
+    "_id": "69a131c20bd2fcb02ab45524",
+    "rule_name": "Unattended Object/Bag Watch",
+    "is_active": true,
+    "target_classes": [
+      "backpack",
+      "suitcase",
+      "handbag"
+    ],
+    "min_confidence": 0.5,
+    "persistence_seconds": 20,
+    "cooldown_seconds": 600,
+    "severity": "medium",
+    "recording_enabled": false,
+    "recording_duration": 0,
+    "description": "Alert for bags left stationary for 20 seconds.",
+    "owner_id": "69973ffd96edc1a238736ecb",
+    "created_at": "2026-02-27 05:55:14.812000",
+    "updated_at": "2026-02-27 05:55:14.812000",
+    "active": true
+  },
+  {
+    "_id": "69a131c20bd2fcb02ab45525",
+    "rule_name": "Vehicle Entry Log",
+    "is_active": true,
+    "target_classes": [
+      "car",
+      "truck",
+      "motorcycle",
+      "bus"
+    ],
+    "min_confidence": 0.7,
+    "persistence_seconds": 2,
+    "cooldown_seconds": 10,
+    "severity": "low",
+    "recording_enabled": false,
+    "recording_duration": 0,
+    "description": "General logging of vehicle movements.",
+    "owner_id": "69973ffd96edc1a238736ecb",
+    "created_at": "2026-02-27 05:55:14.867000",
+    "updated_at": "2026-02-27 05:55:14.867000",
+    "active": true
+  },
+  {
+    "_id": "69a131c20bd2fcb02ab45526",
+    "rule_name": "Electronics Restriction Compliance",
+    "is_active": false,
+    "target_classes": [
+      "cell phone",
+      "laptop"
+    ],
+    "min_confidence": 0.6,
+    "persistence_seconds": 3,
+    "cooldown_seconds": 120,
+    "severity": "medium",
+    "recording_enabled": false,
+    "recording_duration": 0,
+    "description": "Alert if mobile phones or laptops are used in high-security zones.",
+    "owner_id": "69973ffd96edc1a238736ecb",
+    "created_at": "2026-02-27 05:55:14.916000",
+    "updated_at": "2026-02-27 05:55:14.916000",
+    "active": false
+  },
+  {
+    "_id": "69a18f2c8fbc85ec2497d8ef",
+    "rule_name": "Security Breach (Person)",
+    "is_active": true,
+    "target_classes": [
+      "person"
+    ],
+    "min_confidence": 0.5,
+    "persistence_seconds": 1,
+    "cooldown_seconds": 10,
+    "severity": "critical",
+    "recording_enabled": true,
+    "recording_duration": 30,
+    "owner_id": "69973ffd96edc1a238736ecb",
+    "created_at": "2026-02-27 12:33:48.037000",
+    "updated_at": "2026-02-27 12:33:48.037000"
+  },
+  {
+    "_id": "69a18f2c8fbc85ec2497d8f0",
+    "rule_name": "Unauthorized Vehicle",
+    "is_active": true,
+    "target_classes": [
+      "car",
+      "truck",
+      "bus",
+      "motorcycle"
+    ],
+    "min_confidence": 0.6,
+    "persistence_seconds": 3,
+    "cooldown_seconds": 20,
+    "severity": "high",
+    "recording_enabled": true,
+    "recording_duration": 15,
+    "owner_id": "69973ffd96edc1a238736ecb",
+    "created_at": "2026-02-27 12:33:48.037000",
+    "updated_at": "2026-02-27 12:33:48.037000"
+  },
+  {
+    "_id": "69a18f2c8fbc85ec2497d8f1",
+    "rule_name": "Package Monitoring",
+    "is_active": true,
+    "target_classes": [
+      "backpack",
+      "handbag",
+      "suitcase"
+    ],
+    "min_confidence": 0.55,
+    "persistence_seconds": 5,
+    "cooldown_seconds": 60,
+    "severity": "medium",
+    "recording_enabled": false,
+    "owner_id": "69973ffd96edc1a238736ecb",
+    "created_at": "2026-02-27 12:33:48.037000",
+    "updated_at": "2026-02-27 12:33:48.037000"
+  }
+]

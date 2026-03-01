@@ -1,0 +1,6 @@
+Connected to db: nexvigil
+Total cameras in DB: 3
+ - meh: ID=69a08d6e06e0120307a66d83, status='inactive', url='0'
+ - lab: ID=69a12389ca084a35fffd4e5d, status='inactive', url='https://192.168.137.252:8080/video'
+ - phone: ID=69a185faa2886142f941a990, status='inactive', url='http://192.168.0.117:8080/video'
+Active cameras (by internal logic): 0

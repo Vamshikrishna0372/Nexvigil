@@ -1,0 +1,10 @@
+=== Nexvigil Stream Pipeline Test ===
+1_CAMERA_OPENED: True
+1_READ: False
+1_CAMERA_RELEASED
+3_API_STATUS: 200
+3_CAMERAS_COUNT: 1
+  3_CAM: id=69a08d6e06e0120307a66d83 url=0 name=meh
+4_STREAM_STATUS: 200
+4_STREAM_BYTES: b'--frame\r\nContent-Type: image/jpeg\r\n\r\n\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00\xff\xdb\x00'
+4_HAS_FRAME_DATA: True

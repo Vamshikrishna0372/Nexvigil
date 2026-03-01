@@ -1,0 +1,14 @@
+Total cameras: 2
+
+ID: 69a08d6e06e0120307a66d83
+  name: meh
+  url: 0
+  status: inactive
+  health_status: online
+
+ID: 69a09ae42e45b685ca5b76da
+  name: phone
+  url: https://192.168.0.117:8080
+  status: active
+  health_status: offline
+

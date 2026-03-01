@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexvigil-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/nexvigil
+      - ENVIRONMENT=production
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+    volumes:
+      - media_volume:/app/media
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mongo:
+    image: mongo:latest
+    container_name: nexvigil-mongo
+    ports:
+      - "27017:27017" # Exposed for dev tools/Compass
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+    
+  ai_agent:
+    build:
+      context: ./ai_agent
+      dockerfile: Dockerfile
+    container_name: nexvigil-ai-agent
+    environment:
+      - BACKEND_URL=http://backend:8000/api/v1
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - CAMERA_ID=cam_default
+    volumes:
+      - media_volume:/app/media # Shared if local file storage? 
+      # Actually AI saves to backend via API (multipart). 
+      # Backend saves to disk. 
+      # AI doesn't need write access to backend media folder unless saving directly. 
+      # In Phase 10 we implemented ingest API. So AI sends file over network.
+      # AI might need local cache.
+    depends_on:
+      - backend
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G # Limit AI memory usage
+
+volumes:
+  mongo_data:
+  media_volume:
