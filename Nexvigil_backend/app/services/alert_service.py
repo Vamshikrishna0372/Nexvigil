@@ -100,10 +100,10 @@ class AlertService:
 
     async def get_alerts(self, user: UserResponse, skip: int = 0, limit: int = 20, 
                          severity: Optional[str] = None, camera_id: Optional[str] = None, 
-                         acknowledged: Optional[bool] = None) -> dict:
+                         acknowledged: Optional[bool] = None, request: Request = None) -> dict:
         query = {}
         # Multi-tenancy check
-        if user.role != "admin": # System Admin
+        if user.role != "admin": 
              if user.organization_id:
                   query["organization_id"] = user.organization_id
              else:
@@ -121,20 +121,20 @@ class AlertService:
         cursor = db.client[db.db.name][self.collection_name].find(query).sort("created_at", -1).skip(skip).limit(limit)
         alerts = await cursor.to_list(length=limit)
         
+        # Determine Base URL for media
+        base_url = str(request.base_url).rstrip("/") if request and settings.ENVIRONMENT == "development" else settings.BASE_URL
+        
         for a in alerts:
+            # Convert ObjectId to string to prevent Pydantic validation error
             a["_id"] = str(a["_id"])
             a["id"] = a["_id"]
             
-            # Fast verification for list view
-            import os
-            from app.core.config import settings
-            media_root = settings.MEDIA_DIR
             for p_key in ["video_path", "screenshot_path"]:
                 rel_path = a.get(p_key)
                 if rel_path:
-                    # Point 7 requirement: Return full accessible URL
-                    # rel_path already starts with /media/ from Point 6
-                    a[p_key] = f"{settings.BASE_URL}{rel_path}?ngrok-skip-browser-warning=true"
+                    # Clean the path to ensure it doesn't have double slashes
+                    clean_path = rel_path if rel_path.startswith("/") else f"/{rel_path}"
+                    a[p_key] = f"{base_url}{clean_path}?ngrok-skip-browser-warning=true"
                 else: a[p_key] = None
            
         return {
@@ -143,7 +143,7 @@ class AlertService:
             "data": [AlertResponse(**a) for a in alerts]
         }
 
-    async def get_alert_by_id(self, alert_id: str, user: UserResponse) -> Optional[AlertResponse]:
+    async def get_alert_by_id(self, alert_id: str, user: UserResponse, request: Request = None) -> Optional[AlertResponse]:
         try:
             oid = ObjectId(alert_id)
         except:
@@ -165,18 +165,20 @@ class AlertService:
         if not is_authorized:
              raise HTTPException(status_code=403, detail="Forbidden")
              
-        # Verification: Check if files truly exist on disk before returning paths
-        import os
-        from app.core.config import settings
+        # Determine Base URL
+        base_url = str(request.base_url).rstrip("/") if request and settings.ENVIRONMENT == "development" else settings.BASE_URL
+
+        alert["_id"] = str(alert["_id"])
+        alert["id"] = alert["_id"]
         
-        media_root = settings.MEDIA_DIR
         for p_key in ["video_path", "screenshot_path"]:
             rel_path = alert.get(p_key)
             if rel_path:
-                alert[p_key] = f"{settings.BASE_URL}{rel_path}?ngrok-skip-browser-warning=true"
+                clean_path = rel_path if rel_path.startswith("/") else f"/{rel_path}"
+                alert[p_key] = f"{base_url}{clean_path}?ngrok-skip-browser-warning=true"
             else:
                 alert[p_key] = None
-        alert["id"] = str(alert["_id"])
+        
         return AlertResponse(**alert)
 
     async def acknowledge_alert(self, alert_id: str, user: UserResponse) -> AlertResponse:

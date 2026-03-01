@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from typing import List, Optional
 from datetime import datetime
 from app.api import deps
@@ -18,14 +18,15 @@ async def read_alerts(
     severity: Optional[str] = None,
     camera_id: Optional[str] = None,
     acknowledged: Optional[bool] = None,
-    current_user: UserResponse = Depends(deps.get_current_active_user)
+    current_user: UserResponse = Depends(deps.get_current_active_user),
+    request: Request = None
 ):
     """
     Get list of alerts with filtering.
     """
     result = await alert_service.get_alerts(current_user, skip=skip, limit=limit, 
                                             severity=severity, camera_id=camera_id, 
-                                            acknowledged=acknowledged)
+                                            acknowledged=acknowledged, request=request)
     
     return BaseResponse(
         success=True,
@@ -50,12 +51,13 @@ async def alerts_summary(
 @router.get("/{alert_id}")
 async def read_alert(
     alert_id: str,
-    current_user: UserResponse = Depends(deps.get_current_active_user)
+    current_user: UserResponse = Depends(deps.get_current_active_user),
+    request: Request = None
 ):
     """
     Get specific alert details.
     """
-    alert = await alert_service.get_alert_by_id(alert_id, current_user)
+    alert = await alert_service.get_alert_by_id(alert_id, current_user, request=request)
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
         

@@ -183,10 +183,9 @@ def camera_worker(cam_cfg: dict, stop_evt: threading.Event):
 
     logger.info(f"[{cam_name}] Worker init for {source}")
 
-    live_dir        = os.path.join(MEDIA_DIR, "live")
-    screenshots_dir = os.path.join(MEDIA_DIR, "screenshots", cam_id)
-    recordings_dir  = os.path.join(MEDIA_DIR, "recordings", cam_id)
-    for d in (live_dir, screenshots_dir, recordings_dir):
+    live_dir   = os.path.join(MEDIA_DIR, "live")
+    alerts_dir = os.path.join(MEDIA_DIR, "alerts")
+    for d in (live_dir, alerts_dir):
         os.makedirs(d, exist_ok=True)
 
     live_path = os.path.join(live_dir, f"{cam_id}.jpg")
@@ -338,8 +337,8 @@ def camera_worker(cam_cfg: dict, stop_evt: threading.Event):
                                 vid_name = f"{ts}.webm"
                                 
                                 # Prep Paths
-                                ss_abs = os.path.join(screenshots_dir, ss_name)
-                                vid_abs = os.path.join(recordings_dir, vid_name)
+                                ss_abs = os.path.join(alerts_dir, ss_name)
+                                vid_abs = os.path.join(alerts_dir, vid_name)
                                 
                                 # SAVING ASYNC / ATOMIC
                                 cv2.imwrite(ss_abs, inf_img)
@@ -347,24 +346,16 @@ def camera_worker(cam_cfg: dict, stop_evt: threading.Event):
                                 video_queue.put((vid_abs, buffer_snapshot))
                                 
                                 # Professional Message Construction
-                                msg = f"{d['label'].capitalize()} detected"
-                                if "crowd" in rule.get("rule_name", "").lower():
-                                    msg = "Unauthorized crowd formation detected"
-                                elif "weapon" in d['label']:
-                                    msg = "CRITICAL: Potential weapon detected"
-                                elif "person" in d['label'] and "restricted" in rule.get("rule_name", "").lower():
-                                    msg = "Restricted zone entry detected"
-                                
                                 alert_payload = {
                                     "camera_id": cam_id,
                                     "object_detected": d["label"],
                                     "confidence": round(d["conf"], 2),
                                     "severity": severity,
                                     "rule_name": rule.get("rule_name"),
-                                    "display_message": msg, # For professional frontend display
+                                    "display_message": f"{d['label'].capitalize()} detected",
                                     "triggered_rule_id": rule_id,
-                                    "screenshot_path": f"screenshots/{cam_id}/{ss_name}",
-                                    "video_path": f"recordings/{cam_id}/{vid_name}",
+                                    "screenshot_path": f"/media/alerts/{ss_name}",
+                                    "video_path": f"/media/alerts/{vid_name}",
                                     "created_at": datetime.now(timezone.utc).isoformat()
                                 }
                                 alert_queue.put(("alert", alert_payload))

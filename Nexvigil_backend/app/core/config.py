@@ -45,7 +45,7 @@ class Settings(BaseSettings):
             return self.NGROK_URL.rstrip("/")
         # If in production and FRONTEND_URL exists, we might still want BASE_URL to point to backend.
         # But usually in this setup, NGROK_URL is the backend.
-        return "https://api-placeholder.nexvigil.com"
+        return "http://localhost:8000"
 
     @property
     def all_cors_origins(self) -> List[str]:

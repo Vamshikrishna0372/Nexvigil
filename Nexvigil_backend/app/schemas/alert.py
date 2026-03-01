@@ -18,7 +18,7 @@ class AlertCreate(AlertBase):
 
 class AlertResponse(AlertBase):
     id: str = Field(alias="_id")
-    severity: str                            # Always set by alert_service
+    severity: Optional[str] = "medium"         # Always set by alert_service
     camera_id: str
     owner_id: str
     is_acknowledged: bool
