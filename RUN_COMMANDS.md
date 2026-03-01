@@ -60,7 +60,7 @@ python ai_agent.py             # start AI surveillance
 
 ```powershell
 # In a NEW terminal window — keep this running alongside backend
-ngrok http 8000
+.\ngrok.exe http 8000
 ```
 
 **After ngrok starts, you'll see something like:**
