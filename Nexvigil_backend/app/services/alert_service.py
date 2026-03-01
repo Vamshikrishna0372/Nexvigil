@@ -132,9 +132,11 @@ class AlertService:
             for p_key in ["video_path", "screenshot_path"]:
                 rel_path = a.get(p_key)
                 if rel_path:
-                    if not os.path.isfile(os.path.join(media_root, rel_path)):
-                        a[p_key] = None
-            
+                    # Point 7 requirement: Return full accessible URL
+                    # rel_path already starts with /media/ from Point 6
+                    a[p_key] = f"{settings.BASE_URL}{rel_path}?ngrok-skip-browser-warning=true"
+                else: a[p_key] = None
+           
         return {
             "total": total,
             "page": (skip // limit) + 1,
@@ -171,13 +173,10 @@ class AlertService:
         for p_key in ["video_path", "screenshot_path"]:
             rel_path = alert.get(p_key)
             if rel_path:
-                full_path = os.path.join(media_root, rel_path)
-                if not os.path.isfile(full_path):
-                    alert[p_key] = None
-                    logger.warning(f"Alert {alert_id} references missing file: {rel_path}")
-
-        alert["_id"] = str(alert["_id"])
-        alert["id"] = alert["_id"]
+                alert[p_key] = f"{settings.BASE_URL}{rel_path}?ngrok-skip-browser-warning=true"
+            else:
+                alert[p_key] = None
+        alert["id"] = str(alert["_id"])
         return AlertResponse(**alert)
 
     async def acknowledge_alert(self, alert_id: str, user: UserResponse) -> AlertResponse:

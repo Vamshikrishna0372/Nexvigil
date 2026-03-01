@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAlertNotifications } from "@/hooks/useAlertNotifications";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
@@ -84,6 +85,9 @@ const DashboardLayout = () => {
   const location = useLocation();
   const { isAdmin, logout, user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Real-time Professional Notifications
+  useAlertNotifications();
 
   // Persisted sidebar expansion state for Desktop
   const [sidebarExpanded, setSidebarExpanded] = useState(() => {

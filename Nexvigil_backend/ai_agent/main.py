@@ -346,17 +346,28 @@ def camera_worker(cam_cfg: dict, stop_evt: threading.Event):
                                 buffer_snapshot = list(frame_buffer)
                                 video_queue.put((vid_abs, buffer_snapshot))
                                 
-                                alert_queue.put(("alert", {
+                                # Professional Message Construction
+                                msg = f"{d['label'].capitalize()} detected"
+                                if "crowd" in rule.get("rule_name", "").lower():
+                                    msg = "Unauthorized crowd formation detected"
+                                elif "weapon" in d['label']:
+                                    msg = "CRITICAL: Potential weapon detected"
+                                elif "person" in d['label'] and "restricted" in rule.get("rule_name", "").lower():
+                                    msg = "Restricted zone entry detected"
+                                
+                                alert_payload = {
                                     "camera_id": cam_id,
                                     "object_detected": d["label"],
                                     "confidence": round(d["conf"], 2),
                                     "severity": severity,
                                     "rule_name": rule.get("rule_name"),
+                                    "display_message": msg, # For professional frontend display
                                     "triggered_rule_id": rule_id,
                                     "screenshot_path": f"screenshots/{cam_id}/{ss_name}",
                                     "video_path": f"recordings/{cam_id}/{vid_name}",
                                     "created_at": datetime.now(timezone.utc).isoformat()
-                                }))
+                                }
+                                alert_queue.put(("alert", alert_payload))
                                 cooldown[key] = now
                     
                     with det_lock:

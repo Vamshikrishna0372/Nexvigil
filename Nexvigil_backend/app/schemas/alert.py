@@ -11,6 +11,7 @@ class AlertBase(BaseModel):
     metadata: Optional[dict] = None
     triggered_rule_id: Optional[str] = None
     rule_name: Optional[str] = None
+    display_message: Optional[str] = None
 
 class AlertCreate(AlertBase):
     camera_id: str

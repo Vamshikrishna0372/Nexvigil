@@ -172,15 +172,22 @@ export const api = {
   media: {
     recordings: () => request("/media/recordings"),
     // Point directly to StaticFiles mount at /media
-    getVideoUrl: (path: string) => {
-      if (!path) return "";
+    getVideoUrl: (pathOrUrl: string) => {
+      if (!pathOrUrl) return "";
+      // If it's already a full URL (returned by backend Point 7), return it
+      if (pathOrUrl.startsWith("http")) return pathOrUrl;
+
       const base = API_BASE.replace(/\/api\/v1\/?$/, "");
-      return `${base}/media/${path}?ngrok-skip-browser-warning=true`;
+      const cleanPath = pathOrUrl.startsWith("/") ? pathOrUrl.slice(1) : pathOrUrl;
+      return `${base}/${cleanPath}${cleanPath.includes('?') ? '&' : '?'}ngrok-skip-browser-warning=true`;
     },
-    getScreenshotUrl: (path: string) => {
-      if (!path) return "";
+    getScreenshotUrl: (pathOrUrl: string) => {
+      if (!pathOrUrl) return "";
+      if (pathOrUrl.startsWith("http")) return pathOrUrl;
+
       const base = API_BASE.replace(/\/api\/v1\/?$/, "");
-      return `${base}/media/${path}?ngrok-skip-browser-warning=true`;
+      const cleanPath = pathOrUrl.startsWith("/") ? pathOrUrl.slice(1) : pathOrUrl;
+      return `${base}/${cleanPath}${cleanPath.includes('?') ? '&' : '?'}ngrok-skip-browser-warning=true`;
     },
     getToken: () => localStorage.getItem("nexvigil_token") || ""
   },

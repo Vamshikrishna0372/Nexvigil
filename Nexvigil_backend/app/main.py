@@ -157,58 +157,8 @@ media_path = os.path.abspath(settings.MEDIA_DIR)
 if not os.path.exists(media_path):
     os.makedirs(media_path, exist_ok=True)
 
-# Custom media streaming endpoint that supports HTTP Range requests
-# (required for video seeking in <video> tag across all browsers/devices)
-@app.get("/media/{file_path:path}")
-async def serve_media(file_path: str, request: Request):
-    full_path = os.path.join(media_path, file_path)
-    if not os.path.exists(full_path):
-        return JSONResponse(status_code=404, content={"error": "Media file not found"})
-
-    # Security: ensure path stays within media_path (no directory traversal)
-    if not os.path.abspath(full_path).startswith(os.path.abspath(media_path)):
-        return JSONResponse(status_code=403, content={"error": "Forbidden"})
-
-    file_size = os.path.getsize(full_path)
-    content_type, _ = mimetypes.guess_type(full_path)
-    content_type = content_type or "application/octet-stream"
-
-    range_header = request.headers.get("range")
-
-    if range_header and content_type.startswith("video/"):
-        # Parse Range header for video streaming (e.g. "bytes=0-1023")
-        range_val = range_header.replace("bytes=", "")
-        start_str, _, end_str = range_val.partition("-")
-        start = int(start_str) if start_str else 0
-        end = int(end_str) if end_str else file_size - 1
-        end = min(end, file_size - 1)
-        chunk_size = end - start + 1
-
-        def iter_file():
-            with open(full_path, "rb") as f:
-                f.seek(start)
-                remaining = chunk_size
-                while remaining > 0:
-                    data = f.read(min(65536, remaining))
-                    if not data:
-                        break
-                    remaining -= len(data)
-                    yield data
-
-        headers = {
-            "Content-Range": f"bytes {start}-{end}/{file_size}",
-            "Accept-Ranges": "bytes",
-            "Content-Length": str(chunk_size),
-            "Content-Type": content_type,
-        }
-        return StreamingResponse(iter_file(), status_code=206, headers=headers)
-
-    # Normal (non-range) response for images and other files
-    return FileResponse(
-        full_path,
-        media_type=content_type,
-        headers={"Accept-Ranges": "bytes", "Cache-Control": "public, max-age=3600"},
-    )
+# Mount Media Static Files
+app.mount("/media", StaticFiles(directory=media_path), name="media")
 
 @app.get("/", tags=["Root"])
 async def root():

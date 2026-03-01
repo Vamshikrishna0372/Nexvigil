@@ -115,9 +115,8 @@ class StorageService:
             await self.update_storage_stats(user_id, size_mb, 1)
             
             # Return relative path for DB
-            # e.g. media/recordings/user_123/alert_...
-            # We want standardized separate path
-            rel_path = f"{folder}/{user_id}/{filename}"
+            # Point 6 requirement: Ensure paths start with /media/
+            rel_path = f"/media/{folder}/{user_id}/{filename}"
             return rel_path, size_mb
             
         except Exception as e:
