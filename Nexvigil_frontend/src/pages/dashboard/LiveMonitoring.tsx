@@ -25,7 +25,7 @@ const StableStreamViewer = ({ cameraId, cameraName }: { cameraId: string; camera
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const streamUrl = `${API_BASE}/cameras/${cameraId}/stream`;
+  const streamUrl = api.cameras.streamUrl(cameraId);
 
   const toggleFullscreen = useCallback(() => {
     const el = containerRef.current;
@@ -320,11 +320,11 @@ const LiveMonitoring = () => {
           Network Stability Requirements
         </h3>
         <ul className="text-xs text-muted-foreground space-y-1">
-          <li>• Phone and laptop must be on <strong className="text-foreground/70">the same WiFi network</strong></li>
-          <li>• Mobile data must be <strong className="text-foreground/70">OFF</strong> on the phone</li>
-          <li>• IP Webcam resolution: <strong className="text-foreground/70">640×480</strong>, FPS: <strong className="text-foreground/70">15</strong></li>
-          <li>• Use <strong className="text-foreground/70">MJPEG</strong> mode in IP Webcam app (not RTSP)</li>
-          <li>• URL format: <strong className="text-primary font-mono">http://PHONE_IP:8080/video</strong></li>
+          <li>• Phone can access the system <strong className="text-foreground/70">from anywhere</strong> via the Vercel link</li>
+          <li>• Backend must be running on your laptop with <strong className="text-foreground/70">ngrok http 8000</strong></li>
+          <li>• Ensure <strong className="text-primary font-mono">VITE_API_BASE_URL</strong> in Vercel matches your ngrok HTTPS link</li>
+          <li>• First-time users on a new device may need to accept the ngrok warning</li>
+          <li>• MJPEG streaming is active for <strong className="text-foreground/70">iOS, Android, and Web</strong> support</li>
         </ul>
       </div>
     </div>

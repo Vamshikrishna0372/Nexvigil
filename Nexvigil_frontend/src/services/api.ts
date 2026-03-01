@@ -8,7 +8,11 @@ const getApiBase = () => {
   // 1. Highest priority: The explicit environment variable
   const envUrl = import.meta.env.VITE_API_BASE_URL;
   if (envUrl) {
-    return envUrl.replace(/\/$/, "");
+    let base = envUrl.replace(/\/$/, "");
+    if (!base.endsWith("/api/v1")) {
+      base = `${base}/api/v1`;
+    }
+    return base;
   }
 
   // 2. Local development fallback
@@ -113,7 +117,7 @@ export const api = {
       request(`/cameras/${id}`, { method: "DELETE" }),
     health: (id: string) => request(`/cameras/${id}/health`),
     logs: (id: string) => request(`/cameras/${id}/logs`),
-    streamUrl: (id: string) => `${API_BASE}/cameras/${id}/stream`,
+    streamUrl: (id: string) => `${API_BASE}/cameras/${id}/stream?ngrok-skip-browser-warning=true`,
   },
 
   // Rules
