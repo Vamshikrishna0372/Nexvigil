@@ -1,0 +1,264 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@layer base {
+  :root {
+    --background: 216 60% 9%;
+    --foreground: 210 20% 90%;
+
+    --card: 216 45% 12%;
+    --card-foreground: 210 20% 90%;
+
+    --popover: 216 45% 12%;
+    --popover-foreground: 210 20% 90%;
+
+    --primary: 175 70% 45%;
+    --primary-foreground: 216 60% 9%;
+
+    --secondary: 216 35% 18%;
+    --secondary-foreground: 210 20% 85%;
+
+    --muted: 216 30% 16%;
+    --muted-foreground: 215 15% 55%;
+
+    --accent: 175 60% 40%;
+    --accent-foreground: 216 60% 9%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 60% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 216 30% 20%;
+    --input: 216 30% 20%;
+    --ring: 175 70% 45%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 216 50% 10%;
+    --sidebar-foreground: 210 20% 80%;
+    --sidebar-primary: 175 70% 45%;
+    --sidebar-primary-foreground: 216 60% 9%;
+    --sidebar-accent: 216 35% 16%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 216 30% 18%;
+    --sidebar-ring: 175 70% 45%;
+
+    --chart-1: 175 70% 45%;
+    --chart-2: 152 60% 45%;
+    --chart-3: 0 72% 51%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 262 60% 55%;
+  }
+
+  .light {
+    --background: 220 20% 96%;
+    --foreground: 220 20% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 14%;
+
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 220 20% 25%;
+
+    --muted: 220 14% 94%;
+    --muted-foreground: 220 10% 46%;
+
+    --accent: 199 80% 44%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 46%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 60% 38%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 220 13% 87%;
+    --input: 220 13% 87%;
+    --ring: 199 89% 48%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 20% 25%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 95%;
+    --sidebar-accent-foreground: 220 20% 14%;
+    --sidebar-border: 220 13% 90%;
+    --sidebar-ring: 199 89% 48%;
+
+    --chart-1: 199 89% 48%;
+    --chart-2: 152 60% 38%;
+    --chart-3: 0 72% 46%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 262 60% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(175 70% 45% / 0.15), 0 0 60px hsl(175 70% 45% / 0.05);
+  }
+
+  .glow-destructive {
+    box-shadow: 0 0 20px hsl(0 72% 51% / 0.2), 0 0 60px hsl(0 72% 51% / 0.05);
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .recording-dot {
+    @apply w-3 h-3 rounded-full bg-destructive;
+    animation: blink 1s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.3;
+    }
+  }
+
+  .stat-card {
+    @apply glass-panel rounded-lg p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-lg;
+
+    &:hover {
+      box-shadow: 0 4px 20px hsl(175 70% 45% / 0.08);
+    }
+  }
+
+  /* Scanning line animation for monitoring views */
+  .scan-line {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, hsl(175 70% 45% / 0.4), transparent);
+    animation: scanLine 3s ease-in-out infinite;
+  }
+
+  @keyframes scanLine {
+    0% {
+      top: 0;
+      opacity: 0;
+    }
+
+    10% {
+      opacity: 1;
+    }
+
+    90% {
+      opacity: 1;
+    }
+
+    100% {
+      top: 100%;
+      opacity: 0;
+    }
+  }
+
+  /* Shimmer loading effect */
+  .shimmer {
+    background: linear-gradient(90deg,
+        hsl(216 35% 18% / 0) 0%,
+        hsl(216 35% 18% / 0.5) 50%,
+        hsl(216 35% 18% / 0) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* Threat pulse animation */
+  .threat-pulse {
+    animation: threatPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes threatPulse {
+
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 hsl(0 72% 51% / 0.4);
+    }
+
+    50% {
+      box-shadow: 0 0 0 8px hsl(0 72% 51% / 0);
+    }
+  }
+
+  /* Scrollbar thin utility */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(216, 30%, 25%) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+}
