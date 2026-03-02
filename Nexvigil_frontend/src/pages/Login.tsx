@@ -35,7 +35,7 @@ const Login = () => {
     const result = await login(email, password);
     setLoading(false);
     if (result.success) {
-      toast({ title: "Welcome back", description: "Login successful." });
+      toast({ title: "Authentication successful", description: "Your session has been initialized." });
       navigate("/dashboard");
     } else {
       setError(result.error || "Invalid credentials.");

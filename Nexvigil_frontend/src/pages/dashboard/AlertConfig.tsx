@@ -83,7 +83,7 @@ const AlertConfig = () => {
             <p className="text-xs text-muted-foreground">Unacknowledged critical alerts escalate after this time</p>
           </div>
         </div>
-        <Button onClick={() => toast({ title: "Configuration saved" })} className="font-semibold">Save Configuration</Button>
+        <Button onClick={() => toast({ title: "Operational Thresholds Updated", description: "Alert dissemination and rate limiting parameters have been persisted." })} className="font-semibold">Save Configuration</Button>
       </div>
     </div>
   );

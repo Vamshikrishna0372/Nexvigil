@@ -39,7 +39,7 @@ const Register = () => {
     const result = await register(form.name, form.email, form.password);
     setLoading(false);
     if (result.success) {
-      toast({ title: "Account created", description: "Welcome to Nexvigil." });
+      toast({ title: "Registration Successful", description: "Your account has been created and session initialized." });
       navigate("/dashboard");
     } else {
       setError(result.error || "Registration failed.");

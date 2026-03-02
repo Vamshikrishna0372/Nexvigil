@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { api } from "@/services/api";
 
 const SEV_COLORS: Record<string, string> = {
   critical: "hsl(0, 72%, 51%)",
@@ -208,14 +209,32 @@ const Dashboard = () => {
                   <motion.div
                     key={a.id || i}
                     variants={fadeUp}
-                    className="flex justify-between items-center p-3.5 rounded-xl bg-secondary/30 border border-border/20 hover:border-primary/40 hover:bg-secondary/50 transition-all duration-300 group/item"
+                    className="flex justify-between items-center p-3 rounded-xl bg-secondary/30 border border-border/20 hover:border-primary/40 hover:bg-secondary/50 transition-all duration-300 group/item"
                   >
                     <div className="min-w-0 flex-1 flex items-center gap-3">
-                      <div className={cn(
-                        "w-2 h-2 rounded-full shrink-0",
-                        a.severity === "critical" ? "bg-destructive animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.4)]" :
-                          a.severity === "high" ? "bg-warning" : "bg-primary"
-                      )} />
+                      <div className="relative h-11 w-11 shrink-0 rounded-lg overflow-hidden border border-white/5 bg-black/40">
+                        {a.screenshot_path ? (
+                          <img
+                            src={api.media.getScreenshotUrl(a.screenshot_path)}
+                            alt={a.object_detected}
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover/item:scale-110"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center opacity-20">
+                            <Activity className="w-5 h-5" />
+                          </div>
+                        )}
+                        <div className={cn(
+                          "absolute top-1 left-1 w-2 h-2 rounded-full",
+                          a.severity === "critical" ? "bg-destructive animate-pulse" :
+                            a.severity === "high" ? "bg-warning" : "bg-primary"
+                        )} />
+                        {a.duration_seconds && (
+                          <div className="absolute bottom-1 right-1 px-1 py-0.5 bg-black/60 backdrop-blur-md rounded text-[7px] font-bold text-white tracking-widest leading-none border border-white/5">
+                            {a.duration_seconds.toFixed(0)}S
+                          </div>
+                        )}
+                      </div>
                       <div className="min-w-0">
                         <span className="font-bold text-sm text-foreground block truncate group-hover/item:text-primary transition-colors">
                           {a.object_detected}
@@ -231,20 +250,15 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 shrink-0">
                       <div className="text-right hidden sm:block">
-                        <div className="text-[10px] font-bold text-primary/80 uppercase tracking-tighter">{((a.confidence || 0) * 100).toFixed(0)}% Match</div>
+                        <div className="text-[10px] font-bold text-primary/80 uppercase tracking-tighter">{((a.confidence || 0) * 100).toFixed(0)}%</div>
                       </div>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "text-[9px] font-bold uppercase tracking-widest px-2 py-0.5",
-                          a.severity === "critical" ? "text-destructive border-destructive/30 bg-destructive/5" :
-                            a.severity === "high" ? "text-warning border-warning/30 bg-warning/5" : "text-primary border-primary/30 bg-primary/5"
-                        )}
-                      >
-                        {a.severity}
-                      </Badge>
+                      <Link to={`/dashboard/alerts/${a.id}`}>
+                        <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg hover:bg-primary hover:text-white transition-all opacity-0 group-hover/item:opacity-100">
+                          <ArrowUpRight className="w-4 h-4" />
+                        </Button>
+                      </Link>
                     </div>
                   </motion.div>
                 ))}

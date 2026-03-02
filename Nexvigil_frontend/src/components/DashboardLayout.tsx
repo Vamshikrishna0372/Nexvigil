@@ -335,43 +335,52 @@ const DashboardLayout = () => {
           sidebarExpanded ? "lg:ml-[260px]" : "lg:ml-[80px]"
         )}
       >
-        <header className="h-16 border-b border-border bg-card/60 backdrop-blur-3xl flex items-center px-0 sticky top-0 z-40 transition-shadow duration-300">
-          <div className="flex-1 flex items-center justify-start min-w-0">
-            {/* Unified Sidebar Toggle - Corner Block Style */}
-            <button
-              onClick={() => {
-                if (window.innerWidth < 1024) setIsMobileMenuOpen(true);
-                else toggleSidebar();
-              }}
-              className="h-16 w-16 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-secondary/50 transition-all border-r border-border/40 shrink-0 group/toggle active:scale-95"
-              title="Toggle Navigation"
-            >
-              <motion.div
-                animate={{
-                  rotate: sidebarExpanded ? 0 : 180,
-                  scale: sidebarExpanded ? 1 : 1.1
+        <header className="h-16 border-b border-border/40 bg-card/60 backdrop-blur-md sticky top-0 z-40 transition-all duration-300 shadow-sm shadow-black/5">
+          <div className="flex items-center h-full w-full">
+            {/* Left Section - Flex 1 ensures it shares space equally with right if center hidden */}
+            <div className="flex-1 flex items-center justify-start min-w-0 h-full">
+              {/* Unified Sidebar Toggle - Corner Block Style */}
+              <button
+                onClick={() => {
+                  if (window.innerWidth < 1024) setIsMobileMenuOpen(true);
+                  else toggleSidebar();
                 }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className="h-16 w-16 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all border-r border-border/40 shrink-0 group/toggle active:scale-95"
+                title="Toggle Navigation"
               >
-                <Menu className={cn(
-                  "w-6 h-6 transition-colors",
-                  sidebarExpanded ? "text-muted-foreground" : "text-primary text-primary/80"
-                )} />
-              </motion.div>
-            </button>
+                <motion.div
+                  animate={{
+                    rotate: sidebarExpanded ? 0 : 0,
+                    scale: sidebarExpanded ? 1 : 1,
+                    x: sidebarExpanded ? 0 : 0
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                >
+                  {sidebarExpanded ? (
+                    <PanelLeft className="w-5 h-5 transition-colors group-hover/toggle:text-primary" />
+                  ) : (
+                    <Menu className="w-5 h-5 text-primary group-hover/toggle:scale-110 transition-all" />
+                  )}
+                </motion.div>
+              </button>
 
-            {/* Header Content with offset padding */}
-            <div className="flex items-center gap-3 px-4 sm:px-6 flex-1 overflow-hidden">
-              <HeaderLeft />
+              {/* Header Content Left */}
+              <div className="flex items-center gap-1 sm:gap-4 px-2 sm:px-4 overflow-hidden h-full">
+                <HeaderLeft />
+              </div>
             </div>
-          </div>
 
-          <div className="hidden lg:flex flex-1 items-center justify-center">
-            <HeaderCenter />
-          </div>
+            {/* Center Section - Only visible on desktop, absolute centered for "Perfect" alignment */}
+            <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none">
+              <div className="pointer-events-auto">
+                <HeaderCenter />
+              </div>
+            </div>
 
-          <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-3">
-            <HeaderRight />
+            {/* Right Section - Flex 1 ensures it shares space equally with left if center hidden */}
+            <div className="flex-1 flex items-center justify-end px-2 sm:px-6 h-full">
+              <HeaderRight />
+            </div>
           </div>
         </header>
 

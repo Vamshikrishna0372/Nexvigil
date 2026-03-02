@@ -41,7 +41,7 @@ const AccountSettings = () => {
     setSaving(true);
     await new Promise(r => setTimeout(r, 1000));
     setSaving(false);
-    toast({ title: "Settings Saved", description: "Your preferences have been updated." });
+    toast({ title: "Preference synchronization complete", description: "Operational parameters have been successfully updated." });
   };
 
   const saveNotifications = async () => {
@@ -54,7 +54,7 @@ const AccountSettings = () => {
     if (error) {
       toast({ title: "Error", description: error, variant: "destructive" });
     } else {
-      toast({ title: "Settings Saved", description: "Your notification settings have been updated." });
+      toast({ title: "Notification Protocol Updated", description: "Alert dissemination parameters have been persisted." });
     }
   };
 
@@ -304,7 +304,7 @@ const AccountSettings = () => {
 
             <Separator />
 
-            <Button variant="destructive" className="gap-2" onClick={() => toast({ title: "All sessions terminated", description: "You've been logged out from all other devices." })}>
+            <Button variant="destructive" className="gap-2" onClick={() => toast({ title: "Global Session Termination", description: "All secondary authentication tokens have been invalidated." })}>
               <LogOut className="w-4 h-4" /> Logout From All Devices
             </Button>
           </motion.div>

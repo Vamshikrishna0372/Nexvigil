@@ -41,10 +41,10 @@ const Settings = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ai-config"] });
       queryClient.invalidateQueries({ queryKey: ["email-status"] });
-      toast({ title: "Settings saved", description: "AI configuration updated successfully." });
+      toast({ title: "Configuration Persisted", description: "AI engine parameters have been successfully updated." });
     },
     onError: () => {
-      toast({ title: "Error", description: "Failed to update settings.", variant: "destructive" });
+      toast({ title: "Persistence Failure", description: "System was unable to synchronize configuration changes.", variant: "destructive" });
     }
   });
 
@@ -61,13 +61,13 @@ const Settings = () => {
     mutationFn: async (recipient: string) => api.system.aiConfig.emailTest(recipient),
     onSuccess: (res: any) => {
       if (res?.success) {
-        toast({ title: "Test Email Sent", description: "Check your inbox for the verification message." });
+        toast({ title: "Transmission Verified", description: "A verification packet has been dispatched to the target address." });
       } else {
-        toast({ title: "SMTP Configuration Error", description: res?.message || "Failed to send test email.", variant: "destructive" });
+        toast({ title: "SMTP Protocol Violation", description: res?.message || "Internal relay mechanism failure.", variant: "destructive" });
       }
     },
     onError: (err: any) => {
-      toast({ title: "SMTP Configuration Error", description: err.error || "Failed to send test email.", variant: "destructive" });
+      toast({ title: "Credential Validation Failed", description: err.error || "Authentication with relay service was rejected.", variant: "destructive" });
     }
   });
 

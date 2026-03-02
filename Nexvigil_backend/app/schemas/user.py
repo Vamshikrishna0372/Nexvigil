@@ -36,6 +36,7 @@ class UserUpdate(BaseModel):
     status: Optional[str] = None
     org_role: Optional[str] = None
     organization_id: Optional[str] = None
+    email: Optional[EmailStr] = None
     alert_email: Optional[EmailStr] = None
     alerts_enabled: Optional[bool] = None
 

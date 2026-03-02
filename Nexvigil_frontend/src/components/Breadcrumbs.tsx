@@ -11,6 +11,7 @@ const routeMap: Record<string, { label: string; group?: string }> = {
   "/dashboard/critical-alerts": { label: "Critical Alerts", group: "Incident Management" },
   "/dashboard/alert-rules": { label: "Alert Rules", group: "Incident Management" },
   "/dashboard/evidence": { label: "Evidence Vault", group: "Incident Management" },
+  "/dashboard/recordings": { label: "Recordings", group: "Incident Management" },
   "/dashboard/cameras": { label: "Cameras", group: "Camera Management" },
   "/dashboard/camera-health": { label: "Camera Health", group: "Camera Management" },
   "/dashboard/camera-logs": { label: "Camera Logs", group: "Camera Management" },

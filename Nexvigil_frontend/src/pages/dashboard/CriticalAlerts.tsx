@@ -40,7 +40,7 @@ const CriticalAlerts = () => {
     mutationFn: async (id: string) => api.alerts.acknowledge(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["critical-alerts-page"] });
-      toast({ title: "Alert Acknowledged" });
+      toast({ title: "Event Acknowledged", description: "The critical incident has been verified and logged in the audit trail." });
     }
   });
 

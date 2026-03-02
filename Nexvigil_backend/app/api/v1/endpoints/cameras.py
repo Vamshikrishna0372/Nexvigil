@@ -231,20 +231,23 @@ async def get_camera_stream(camera_id: str):
     import time as _time
 
     async def frame_generator():
-        STREAM_INTERVAL      = 0.050   # 20 FPS — matches agent write rate
-        PLACEHOLDER_INTERVAL = 0.5
+        # Lower interval (100Hz) to catch frames immediately as they are written
+        STREAM_INTERVAL      = 0.01   
+        PLACEHOLDER_INTERVAL = 1.0
         placeholder_sent_at  = 0.0
-        last_sig             = (0, 0.0)  # (size, mtime) — cheap change detector
+        last_sig             = (0, 0.0)
 
         while True:
             frame_path = _resolve_live_frame(camera_id)
 
             if frame_path is not None:
                 try:
-                    st   = frame_path.stat()
-                    sig  = (st.st_size, st.st_mtime)
-                    if sig != last_sig and st.st_size > 100:
-                        last_sig    = sig
+                    # Use os.stat for speed
+                    st = frame_path.stat()
+                    sig = (st.st_size, st.st_mtime)
+                    if sig != last_sig:
+                        last_sig = sig
+                        # Use direct read_bytes
                         image_bytes = frame_path.read_bytes()
                         if image_bytes:
                             yield (
@@ -253,8 +256,12 @@ async def get_camera_stream(camera_id: str):
                                 + image_bytes
                                 + b'\r\n'
                             )
-                except Exception as e:
-                    logger.debug(f"[stream/{camera_id}] {e}")
+                            # After sending a frame, a tiny sleep is enough 
+                            # to yield control but still be ready for the next one
+                            await asyncio.sleep(0.005)
+                            continue 
+                except Exception:
+                    pass
                 await asyncio.sleep(STREAM_INTERVAL)
 
             else:

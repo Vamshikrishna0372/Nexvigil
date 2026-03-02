@@ -12,20 +12,21 @@ class AlertBase(BaseModel):
     triggered_rule_id: Optional[str] = None
     rule_name: Optional[str] = None
     display_message: Optional[str] = None
+    duration_seconds: Optional[float] = None
 
 class AlertCreate(AlertBase):
     camera_id: str
 
 class AlertResponse(AlertBase):
     id: str = Field(alias="_id")
-    severity: Optional[str] = "medium"         # Always set by alert_service
-    camera_id: str
-    owner_id: str
-    is_acknowledged: bool
+    severity: Optional[str] = "medium"
+    camera_id: Optional[str] = "unknown"
+    owner_id: Optional[str] = "system"
+    is_acknowledged: bool = False
     acknowledged_by: Optional[str] = None
     acknowledged_at: Optional[datetime] = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime = Field(default_factory=lambda: datetime.now())
+    updated_at: datetime = Field(default_factory=lambda: datetime.now())
 
     class Config:
         populate_by_name = True

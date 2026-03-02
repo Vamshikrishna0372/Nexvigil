@@ -75,7 +75,7 @@ const RecordingPolicies = () => {
             <Switch checked={autoDelete} onCheckedChange={setAutoDelete} />
           </div>
         </div>
-        <Button onClick={() => toast({ title: "Recording policies saved" })} className="font-semibold">Save Policies</Button>
+        <Button onClick={() => toast({ title: "Policy Modifications Persisted", description: "Event-triggered recording parameters have been updated." })} className="font-semibold">Save Policies</Button>
       </div>
     </div>
   );

@@ -53,7 +53,7 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] }
+    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as any }
   }
 };
 
@@ -82,7 +82,8 @@ const Alerts = () => {
           severity: a.severity,
           timestamp: new Date(a.created_at),
           acknowledged: a.is_acknowledged,
-          ruleId: a.triggered_rule_id || "System"
+          ruleId: a.triggered_rule_id || "System",
+          screenshot: a.screenshot_path
         }));
       }
       return [];
@@ -94,7 +95,7 @@ const Alerts = () => {
     mutationFn: async (id: string) => api.alerts.acknowledge(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alerts-list"] });
-      toast({ title: "Alert Acknowledged" });
+      toast({ title: "Event Acknowledged", description: "The incident has been verified and logged." });
     }
   });
 
@@ -102,7 +103,7 @@ const Alerts = () => {
     mutationFn: async (id: string) => api.alerts.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alerts-list"] });
-      toast({ title: "Alert Deleted" });
+      toast({ title: "Record Purged", description: "The event data has been removed from the system." });
     }
   });
 
@@ -214,14 +215,29 @@ const Alerts = () => {
                       className="group/row hover:bg-primary/[0.03] transition-all duration-300"
                     >
                       <td className="p-5">
-                        <div className="flex items-center gap-3">
-                          <div className={cn(
-                            "w-2.5 h-2.5 rounded-full transition-shadow duration-500",
-                            s.color.replace("text-", "bg-"),
-                            (a.severity === "critical" || a.severity === "high") && "animate-pulse " + s.glow
-                          )} />
-                          <div className="flex flex-col">
-                            <span className="text-sm font-bold text-foreground capitalize tracking-tight group-hover/row:text-primary transition-colors">{a.object}</span>
+                        <div className="flex items-center gap-4">
+                          <div className="relative h-10 w-14 shrink-0 rounded-lg overflow-hidden border border-border/40 bg-black/20 group-hover/row:border-primary/40 transition-colors">
+                            {a.screenshot ? (
+                              <img
+                                src={api.media.getScreenshotUrl(a.screenshot)}
+                                alt={a.object}
+                                className="h-full w-full object-cover transition-transform duration-500 group-hover/row:scale-110"
+                              />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center opacity-20">
+                                <Activity className="w-4 h-4" />
+                              </div>
+                            )}
+                            <div className={cn(
+                              "absolute top-1 left-1 w-2 h-2 rounded-full",
+                              a.severity === "critical" ? "bg-destructive animate-pulse" :
+                                a.severity === "high" ? "bg-warning" : "bg-primary"
+                            )} />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-sm font-bold text-foreground capitalize tracking-tight group-hover/row:text-primary transition-colors truncate">
+                              {a.object}
+                            </span>
                             {a.acknowledged && (
                               <span className="text-[10px] text-success font-bold uppercase flex items-center gap-1 mt-0.5">
                                 <CheckCircle className="w-3 h-3" /> Verified

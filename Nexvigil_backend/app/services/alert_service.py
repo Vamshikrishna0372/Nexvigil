@@ -1,7 +1,8 @@
 from app.db.mongodb import db
+from app.core.config import settings
 from app.schemas.alert import AlertCreate, AlertResponse, AlertSummary
 from app.schemas.user import UserResponse
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Request
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
 from bson import ObjectId
@@ -132,8 +133,15 @@ class AlertService:
             for p_key in ["video_path", "screenshot_path"]:
                 rel_path = a.get(p_key)
                 if rel_path:
-                    # Clean the path to ensure it doesn't have double slashes
+                    # Clean the path to ensure it starts with /media/
+                    # If it's already a full URL, skip.
+                    if rel_path.startswith("http"):
+                        continue
+                        
                     clean_path = rel_path if rel_path.startswith("/") else f"/{rel_path}"
+                    if not clean_path.startswith("/media/"):
+                        clean_path = f"/media{clean_path}"
+                        
                     a[p_key] = f"{base_url}{clean_path}?ngrok-skip-browser-warning=true"
                 else: a[p_key] = None
            
@@ -174,7 +182,11 @@ class AlertService:
         for p_key in ["video_path", "screenshot_path"]:
             rel_path = alert.get(p_key)
             if rel_path:
+                if rel_path.startswith("http"):
+                    continue
                 clean_path = rel_path if rel_path.startswith("/") else f"/{rel_path}"
+                if not clean_path.startswith("/media/"):
+                    clean_path = f"/media{clean_path}"
                 alert[p_key] = f"{base_url}{clean_path}?ngrok-skip-browser-warning=true"
             else:
                 alert[p_key] = None

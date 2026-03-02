@@ -20,7 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const LiveStreamView = ({ cameraId }: { cameraId: string }) => {
   const [status, setStatus] = useState<"loading" | "live" | "error">("loading");
   const imgRef = useRef<HTMLImageElement>(null);
-  const streamUrl = `${API_BASE}/cameras/${cameraId}/stream?_=${cameraId}`;
+  const streamUrl = api.cameras.streamUrl(cameraId);
 
   // When cameraId changes, reset to loading
   useEffect(() => {
@@ -109,7 +109,7 @@ const Cameras = () => {
       queryClient.invalidateQueries({ queryKey: ["cameras-list"] });
       setAddOpen(false);
       setForm({ name: "", url: "", location: "" });
-      toast({ title: "Camera added successfully" });
+      toast({ title: "Camera Registration Successful" });
     },
     onError: (err: any) => {
       toast({ title: "Failed to add camera", description: err.message, variant: "destructive" });
@@ -122,7 +122,7 @@ const Cameras = () => {
       queryClient.invalidateQueries({ queryKey: ["cameras-list"] });
       setEditOpen(false);
       setEditCam(null);
-      toast({ title: "Camera updated successfully" });
+      toast({ title: "Configuration Persisted" });
     },
     onError: (err: any) => {
       toast({ title: "Failed to update camera", description: err.message, variant: "destructive" });
@@ -133,7 +133,7 @@ const Cameras = () => {
     mutationFn: async (id: string) => api.cameras.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cameras-list"] });
-      toast({ title: "Camera deleted", variant: "destructive" });
+      toast({ title: "Camera Removed", variant: "destructive" });
     }
   });
 
@@ -141,7 +141,7 @@ const Cameras = () => {
     mutationFn: async ({ id, status }: { id: string, status: string }) => api.cameras.update(id, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cameras-list"] });
-      toast({ title: "Camera status updated" });
+      toast({ title: "Operational Status Modified" });
     }
   });
 
@@ -185,7 +185,7 @@ const Cameras = () => {
     const finalForm = { ...form, url: normalizedUrl };
 
     if (normalizedUrl !== form.url) {
-      toast({ title: "URL Auto-Corrected", description: `Using: ${normalizedUrl}` });
+      toast({ title: "URL Optimized", description: `Source redefined: ${normalizedUrl}` });
     }
 
     addMutation.mutate(finalForm);
@@ -243,7 +243,7 @@ const Cameras = () => {
             size="sm"
             onClick={async () => {
               const { data } = await refetch();
-              if (data) toast({ title: "Cameras refreshed" });
+              if (data) toast({ title: "Camera list synchronized" });
             }}
             disabled={isRefetching}
             className="gap-2"

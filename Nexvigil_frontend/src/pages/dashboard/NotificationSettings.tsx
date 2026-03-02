@@ -81,7 +81,7 @@ const NotificationSettings = () => {
             </SelectContent>
           </Select>
         </div>
-        <Button onClick={() => toast({ title: "Notification settings saved" })} className="font-semibold">Save Settings</Button>
+        <Button onClick={() => toast({ title: "Preference synchronization complete" })} className="font-semibold">Save Settings</Button>
       </div>
     </div>
   );

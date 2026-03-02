@@ -52,7 +52,7 @@ TARGET_H      = 480
 JPEG_QUALITY  = 60           # Professional balance of speed vs quality
 CONFIDENCE    = 0.40         # Lower baseline for better recall
 YOLO_INTERVAL = 0.3          # 3 detections/sec
-WRITE_FPS     = 20           
+WRITE_FPS     = 25
 MAX_FAILURES  = 20           
 
 # ─── Rule Logic Helpers ──────────────────────────────────────────────────────
@@ -205,7 +205,7 @@ def camera_worker(cam_cfg: dict, stop_evt: threading.Event):
     det_lock          = threading.Lock()
     
     # Frame buffer for video recording 
-    frame_buffer = collections.deque(maxlen=45) # ~3 seconds at 15fps or so
+    frame_buffer = collections.deque(maxlen=90) # ~9 seconds at 10fps
     video_queue  = queue.Queue()
 
     # --- Thread 1: Resilient Capture ---
@@ -356,6 +356,7 @@ def camera_worker(cam_cfg: dict, stop_evt: threading.Event):
                                     "triggered_rule_id": rule_id,
                                     "screenshot_path": f"/media/alerts/{ss_name}",
                                     "video_path": f"/media/alerts/{vid_name}",
+                                    "duration_seconds": len(buffer_snapshot) / 10.0,
                                     "created_at": datetime.now(timezone.utc).isoformat()
                                 }
                                 alert_queue.put(("alert", alert_payload))

@@ -1,4 +1,4 @@
-import { Bell, User, ChevronDown, Shield, Settings, ScrollText, LogOut, Camera, AlertTriangle, Check, Plus, Zap, Moon, Sun } from "lucide-react";
+import { Bell, User, ChevronDown, Shield, Settings, ScrollText, LogOut, Camera, AlertTriangle, Check, Plus, Zap, Moon, Sun, Sliders } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -52,7 +52,7 @@ const HeaderRight = () => {
   };
 
   return (
-    <div className="flex items-center gap-1 sm:gap-1.5">
+    <div className="flex items-center gap-2 sm:gap-3 h-full">
       {/* Theme Toggle */}
       <button
         onClick={toggleTheme}
@@ -75,15 +75,15 @@ const HeaderRight = () => {
       {/* Notification Bell */}
       <Popover>
         <PopoverTrigger asChild>
-          <button className="relative p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
-            <Bell className="w-[18px] h-[18px]" />
+          <button className="relative p-2 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all duration-300 group">
+            <Bell className="w-[20px] h-[20px] group-hover:scale-110 transition-transform" />
             <AnimatePresence>
               {userUnread > 0 && (
                 <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full px-1"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  className="absolute top-1 right-1 min-w-[15px] h-[15px] flex items-center justify-center bg-destructive text-[9px] font-black text-white rounded-full px-1 shadow-[0_0_8px_rgba(239,68,68,0.4)] border border-background"
                 >
                   {userUnread > 99 ? "99+" : userUnread}
                 </motion.span>
@@ -91,51 +91,57 @@ const HeaderRight = () => {
             </AnimatePresence>
           </button>
         </PopoverTrigger>
-        <PopoverContent side="bottom" align="end" className="w-[340px] sm:w-[380px] bg-card border-border p-0">
-          <div className="flex items-center justify-between p-3 border-b border-border">
-            <h4 className="text-sm font-semibold text-foreground">Recent Activity</h4>
+        <PopoverContent side="bottom" align="end" className="w-[360px] sm:w-[400px] bg-card/95 backdrop-blur-md border-border/60 p-0 rounded-2xl shadow-2xl overflow-hidden z-[100]">
+          <div className="flex items-center justify-between p-4 border-b border-border/40 bg-primary/5">
+            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">Operational Activity</h4>
+            {userUnread > 0 && <Badge variant="outline" className="text-[9px] h-4 border-primary/20 bg-primary/10 text-primary">{userUnread} UNREAD</Badge>}
           </div>
-          <div className="max-h-[60vh] sm:max-h-80 overflow-y-auto scrollbar-thin">
+          <div className="max-h-[60vh] sm:max-h-96 overflow-y-auto scrollbar-thin divide-y divide-border/10">
             {alerts.length === 0 ? (
-              <p className="p-6 text-sm text-muted-foreground text-center">No recent alerts</p>
+              <div className="p-12 text-center">
+                <Bell className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground italic">System quiet — No recent activity</p>
+              </div>
             ) : (
               alerts.map(alert => (
                 <div
                   key={alert.id}
-                  className={cn("px-3 py-3 border-b border-border/30 hover:bg-secondary/30 transition-colors cursor-pointer", !alert.read && "bg-primary/5")}
+                  className={cn(
+                    "group/alert px-4 py-4 hover:bg-primary/[0.03] transition-all cursor-pointer relative overflow-hidden",
+                    !alert.read && "bg-primary/[0.05]"
+                  )}
                   onClick={() => { if (isAdmin && !alert.read) acknowledgeMutation.mutate(alert.id); }}
                 >
-                  <div className="flex items-start gap-2.5">
-                    <span className={cn("w-2 h-2 rounded-full mt-1.5 shrink-0", severityColors[alert.severity])} />
+                  {!alert.read && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />}
+                  <div className="flex items-start gap-3">
+                    <div className={cn("w-2 h-2 rounded-full mt-1.5 shrink-0 shadow-sm", severityColors[alert.severity])} />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-sm font-medium text-foreground">{alert.object}</span>
-                          <Badge variant="outline" className={cn("text-[9px] px-1",
-                            alert.severity === "critical" ? "text-destructive border-destructive/30" :
-                              alert.severity === "high" ? "text-warning border-warning/30" :
-                                "text-primary border-primary/30"
+                      <div className="flex items-center justify-between gap-3 mb-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-bold text-foreground group-hover/alert:text-primary transition-colors">{alert.object}</span>
+                          <Badge variant="outline" className={cn("text-[9px] font-black px-1.5 py-0 h-4 border-transparent uppercase tracking-wider",
+                            alert.severity === "critical" ? "bg-destructive/10 text-destructive" :
+                              alert.severity === "high" ? "bg-warning/10 text-warning" :
+                                "bg-primary/10 text-primary"
                           )}>{alert.severity}</Badge>
                         </div>
-                        <span className="text-[10px] text-muted-foreground shrink-0 font-mono">
-                          {alert.timestamp.toLocaleString(undefined, {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                            hour12: true
-                          })}
+                        <span className="text-[10px] text-muted-foreground font-mono bg-secondary/50 px-1.5 rounded">
+                          {alert.timestamp.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">{alert.camera} — {alert.confidence}%</p>
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground/70 font-medium">
+                        <span className="flex items-center gap-1"><Camera className="w-3 h-3 opacity-60" /> Node {alert.camera?.slice(-6).toUpperCase()}</span>
+                        <span className="font-mono tracking-tighter">CONF: {alert.confidence}%</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               ))
             )}
           </div>
-          <div className="p-2 border-t border-border">
+          <div className="p-3 bg-secondary/20 border-t border-border/40">
             <Link to="/dashboard/alerts" className="block">
-              <Button variant="ghost" size="sm" className="w-full text-xs">View All Alerts</Button>
+              <Button variant="ghost" size="sm" className="w-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary/5">AUDIT FULL FEED</Button>
             </Link>
           </div>
         </PopoverContent>
@@ -144,22 +150,34 @@ const HeaderRight = () => {
       {/* Quick Actions */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors hidden sm:flex">
-            <Zap className="w-[18px] h-[18px]" />
+          <button className="p-2 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-all duration-300 group hidden sm:flex border border-transparent hover:border-border/40">
+            <Zap className="w-[18px] h-[18px] group-hover:text-primary group-hover:scale-110 transition-all" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48 bg-card border-border">
-          {isAdmin && (
+        <DropdownMenuContent align="end" className="w-56 bg-card/95 backdrop-blur-md border-border/60 p-1.5 rounded-2xl shadow-2xl z-[100]">
+          <div className="px-3 py-2 border-b border-border/40 mb-1">
+            <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Rapid Commands</h5>
+          </div>
+          {isAdmin ? (
             <>
-              <DropdownMenuItem onClick={() => navigate("/dashboard/users")} className="gap-2 text-sm"><Plus className="w-3.5 h-3.5" />Add User</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/dashboard/cameras")} className="gap-2 text-sm"><Camera className="w-3.5 h-3.5" />Add Camera</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/dashboard/critical-alerts")} className="gap-2 text-sm"><AlertTriangle className="w-3.5 h-3.5" />Critical Alerts</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/dashboard/users")} className="gap-3 text-xs font-bold py-2.5 rounded-xl transition-all hover:bg-primary/10 hover:text-primary">
+                <Plus className="w-4 h-4" />Register Operator
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/dashboard/cameras")} className="gap-3 text-xs font-bold py-2.5 rounded-xl transition-all hover:bg-primary/10 hover:text-primary">
+                <Camera className="w-4 h-4" />Initialize Sensor Node
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/dashboard/critical-alerts")} className="gap-3 text-xs font-bold py-2.5 rounded-xl transition-all hover:bg-destructive/10 hover:text-destructive">
+                <AlertTriangle className="w-4 h-4" />High Priority Feed
+              </DropdownMenuItem>
             </>
-          )}
-          {!isAdmin && (
+          ) : (
             <>
-              <DropdownMenuItem onClick={() => navigate("/dashboard/cameras")} className="gap-2 text-sm"><Camera className="w-3.5 h-3.5" />Add Camera</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/dashboard/alerts")} className="gap-2 text-sm"><Bell className="w-3.5 h-3.5" />My Alerts</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/dashboard/cameras")} className="gap-3 text-xs font-bold py-2.5 rounded-xl transition-all hover:bg-primary/10 hover:text-primary">
+                <Camera className="w-4 h-4" />Link New Camera
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/dashboard/alerts")} className="gap-3 text-xs font-bold py-2.5 rounded-xl transition-all hover:bg-primary/10 hover:text-primary">
+                <Bell className="w-4 h-4" />Personal Insight Feed
+              </DropdownMenuItem>
             </>
           )}
         </DropdownMenuContent>
@@ -168,35 +186,61 @@ const HeaderRight = () => {
       {/* User Profile */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-2 py-1.5 rounded-lg hover:bg-secondary transition-colors">
-            <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold", isAdmin ? "bg-destructive/20 text-destructive" : "bg-primary/20 text-primary")}>
+          <button className="flex items-center gap-2 sm:gap-3 px-1.5 py-1 rounded-xl hover:bg-secondary/60 transition-all duration-300 border border-transparent hover:border-border/40 group">
+            <div className={cn(
+              "w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-black shadow-inner transition-transform group-hover:scale-105",
+              isAdmin ? "bg-destructive/15 text-destructive border border-destructive/20" : "bg-primary/15 text-primary border border-primary/20"
+            )}>
               {user?.name?.charAt(0) || "U"}
             </div>
-            <div className="hidden md:block text-left">
-              <span className="text-sm font-medium text-foreground block leading-tight">{user?.name}</span>
-              <span className={cn("text-[10px] font-semibold uppercase", isAdmin ? "text-destructive" : "text-primary")}>{user?.role}</span>
+            <div className="hidden lg:block text-left">
+              <span className="text-xs font-black text-foreground block leading-tight tracking-tight uppercase truncate max-w-[100px]">{user?.name}</span>
+              <span className={cn("text-[9px] font-black uppercase tracking-widest opacity-70", isAdmin ? "text-destructive" : "text-primary")}>{user?.role}</span>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground hidden md:inline" />
+            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground hidden lg:inline group-hover:translate-y-0.5 transition-transform" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52 bg-card border-border">
-          <div className="px-3 py-2.5 border-b border-border/50">
-            <p className="text-sm font-medium text-foreground">{user?.name}</p>
-            <p className="text-xs text-muted-foreground">{user?.email}</p>
-            <Badge variant="outline" className={cn("mt-1.5 text-[9px]", isAdmin ? "text-destructive border-destructive/30" : "text-primary border-primary/30")}>
-              <Shield className="w-2.5 h-2.5 mr-1" />{isAdmin ? "Administrator" : "Standard User"}
-            </Badge>
+        <DropdownMenuContent align="end" className="w-64 bg-card/95 backdrop-blur-md border-border/60 p-1.5 rounded-2xl shadow-2xl z-[100]">
+          <div className="px-4 py-3.5 border-b border-border/40 mb-1.5 bg-primary/[0.02]">
+            <div className="flex items-center gap-3">
+              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black", isAdmin ? "bg-destructive/15 text-destructive" : "bg-primary/15 text-primary")}>
+                {user?.name?.charAt(0) || "U"}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-black text-foreground truncate uppercase">{user?.name}</p>
+                <p className="text-[10px] text-muted-foreground truncate font-medium">{user?.email}</p>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-2">
+              <Badge variant="outline" className={cn("text-[9px] font-black tracking-widest px-2 py-0 border-transparent", isAdmin ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary")}>
+                <Shield className="w-3 h-3 mr-1" />{isAdmin ? "ADMIN CONTROL" : "OPERATOR"}
+              </Badge>
+              {isOrgAdmin && <Badge variant="outline" className="text-[9px] font-black tracking-widest px-2 py-0 bg-secondary text-muted-foreground border-transparent">ORG LEAD</Badge>}
+            </div>
           </div>
-          <DropdownMenuItem onClick={() => navigate("/dashboard/profile")} className="gap-2 text-sm"><User className="w-3.5 h-3.5" />View Profile</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/dashboard/account-settings")} className="gap-2 text-sm"><Settings className="w-3.5 h-3.5" />Account Settings</DropdownMenuItem>
-          {isAdmin && (
-            <>
-              <DropdownMenuItem onClick={() => navigate("/dashboard/settings")} className="gap-2 text-sm"><Settings className="w-3.5 h-3.5" />System Settings</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/dashboard/audit-logs")} className="gap-2 text-sm"><ScrollText className="w-3.5 h-3.5" />Audit Logs</DropdownMenuItem>
-            </>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout} className="gap-2 text-sm text-destructive focus:text-destructive"><LogOut className="w-3.5 h-3.5" />Logout</DropdownMenuItem>
+
+          <div className="space-y-0.5">
+            <DropdownMenuItem onClick={() => navigate("/dashboard/profile")} className="gap-3 text-xs font-bold py-2.5 rounded-xl transition-all hover:bg-primary/10 hover:text-primary cursor-pointer">
+              <User className="w-4 h-4" />User Profile Matrix
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/account-settings")} className="gap-3 text-xs font-bold py-2.5 rounded-xl transition-all hover:bg-primary/10 hover:text-primary cursor-pointer">
+              <Settings className="w-4 h-4" />Account Authorization
+            </DropdownMenuItem>
+            {isAdmin && (
+              <>
+                <DropdownMenuItem onClick={() => navigate("/dashboard/settings")} className="gap-3 text-xs font-bold py-2.5 rounded-xl transition-all hover:bg-primary/10 hover:text-primary cursor-pointer">
+                  <Sliders className="w-4 h-4" />System Core Config
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/dashboard/audit-logs")} className="gap-3 text-xs font-bold py-2.5 rounded-xl transition-all hover:bg-primary/10 hover:text-primary cursor-pointer">
+                  <ScrollText className="w-4 h-4" />Central Intelligence Logs
+                </DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuSeparator className="bg-border/40 mx-2" />
+            <DropdownMenuItem onClick={handleLogout} className="gap-3 text-xs font-bold py-2.5 rounded-xl transition-all text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer">
+              <LogOut className="w-4 h-4" />Terminate Session
+            </DropdownMenuItem>
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

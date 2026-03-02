@@ -49,24 +49,24 @@ const Profile = () => {
     setSaving(true);
     await new Promise(r => setTimeout(r, 1200));
     setSaving(false);
-    toast({ title: "Profile Updated", description: "Your profile has been saved successfully." });
+    toast({ title: "Profile Modifications Persisted", description: "Your administrative profile has been updated successfully." });
   };
 
   const changePw = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentPw || !newPw || !confirmPw) return;
     if (newPw !== confirmPw) {
-      toast({ title: "Passwords don't match", description: "New password and confirm password must match.", variant: "destructive" });
+      toast({ title: "Validation Error", description: "Password confirmation does not match the new password.", variant: "destructive" });
       return;
     }
     if (pwStrength < 2) {
-      toast({ title: "Password too weak", description: "Choose a stronger password.", variant: "destructive" });
+      toast({ title: "Security Threshold Not Met", description: "The provided password does not meet complexity requirements.", variant: "destructive" });
       return;
     }
     setChangingPw(true);
     await new Promise(r => setTimeout(r, 1500));
     setChangingPw(false);
-    toast({ title: "Password Updated", description: "Your password has been changed successfully." });
+    toast({ title: "Credential Update Successful", description: "Access credentials have been updated." });
     setCurrentPw(""); setNewPw(""); setConfirmPw("");
   };
 
@@ -169,7 +169,7 @@ const Profile = () => {
             {newPw && (
               <div className="max-w-sm space-y-1">
                 <div className="flex gap-1">
-                  {[0,1,2,3,4].map(i => (
+                  {[0, 1, 2, 3, 4].map(i => (
                     <div key={i} className={cn("h-1 flex-1 rounded-full transition-colors", i < pwStrength ? strengthColors[pwStrength - 1] : "bg-secondary")} />
                   ))}
                 </div>

@@ -15,7 +15,7 @@ const CameraGridCard = ({ cam, isAdmin }: { cam: any; isAdmin: boolean }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const streamUrl = `${API_BASE}/cameras/${cam.id}/stream`;
+  const streamUrl = api.cameras.streamUrl(cam.id);
 
   const toggleFullscreen = useCallback(() => {
     const el = containerRef.current;

@@ -31,7 +31,7 @@ const AlertDetails = () => {
     mutationFn: async () => api.alerts.delete(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alerts-list"] });
-      toast({ title: "Alert deleted" });
+      toast({ title: "Incident record purged" });
       navigate("/dashboard/alerts");
     }
   });
@@ -40,7 +40,7 @@ const AlertDetails = () => {
     mutationFn: async () => api.alerts.acknowledge(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alert-detail", id] });
-      toast({ title: "Alert acknowledged" });
+      toast({ title: "Event Acknowledged", description: "The incident has been verified and logged." });
     }
   });
 
@@ -117,17 +117,25 @@ const AlertDetails = () => {
             </div>
             <div className="aspect-video relative flex items-center justify-center bg-zinc-950">
               {(() => {
-                if (alert.video_path && (alert.video_path.toLowerCase().endsWith('.mp4') || alert.video_path.toLowerCase().endsWith('.webm'))) {
-                  return (
-                    <video
-                      controls
-                      className="w-full h-full object-contain"
-                      autoPlay={false}
-                      preload="metadata"
-                    >
-                      <source src={videoUrl} type={`video/${alert.video_path.split('.').pop()}`} />
-                    </video>
-                  );
+                if (alert.video_path) {
+                  const pathWithoutQuery = alert.video_path.split('?')[0];
+                  const ext = pathWithoutQuery.split('.').pop()?.toLowerCase();
+                  if (ext === 'mp4' || ext === 'webm') {
+                    return (
+                      <video
+                        controls
+                        muted
+                        playsInline
+                        className="w-full h-full object-contain"
+                        autoPlay={false}
+                        preload="auto"
+                        onError={(e) => console.error("Video load error:", e)}
+                      >
+                        <source src={videoUrl} type={`video/${ext === 'mp4' ? 'mp4' : 'webm'}`} />
+                        Your browser does not support the video tag.
+                      </video>
+                    );
+                  }
                 }
                 return (
                   <div className="text-center text-muted-foreground/40 p-12">
@@ -194,6 +202,10 @@ const AlertDetails = () => {
                 <span className="text-sm font-mono font-bold text-foreground">
                   {new Date(alert.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                 </span>
+              </div>
+              <div className="flex justify-between border-b border-border/30 pb-3">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Clip Duration</span>
+                <span className="text-sm font-mono font-bold text-primary">{alert.duration_seconds?.toFixed(1) || '0.0'}s</span>
               </div>
               <div className="flex justify-between items-center opacity-60">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Hash</span>

@@ -85,7 +85,7 @@ const AlertRules = () => {
       queryClient.invalidateQueries({ queryKey: ["alert-rules"] });
       setOpen(false);
       resetForm();
-      toast({ title: "✅ Rule Created", description: "Detection rule is now active." });
+      toast({ title: "Protocol Established", description: "The detection rule has been successfully activated." });
     },
     onError: (err: any) => {
       toast({ title: "Failed to create rule", description: err.message, variant: "destructive" });
@@ -98,7 +98,7 @@ const AlertRules = () => {
       queryClient.invalidateQueries({ queryKey: ["alert-rules"] });
       setOpen(false);
       resetForm();
-      toast({ title: "✅ Rule Updated", description: "Changes saved successfully." });
+      toast({ title: "Protocol Updated", description: "Configuration changes have been persisted." });
     },
     onError: (err: any) => {
       toast({ title: "Failed to update rule", description: err.message, variant: "destructive" });
@@ -112,10 +112,10 @@ const AlertRules = () => {
     onSuccess: (_, { is_active }) => {
       queryClient.invalidateQueries({ queryKey: ["alert-rules"] });
       toast({
-        title: is_active ? "🟢 Rule Enabled" : "⚫ Rule Disabled",
+        title: is_active ? "Protocol Activated" : "Protocol Deactivated",
         description: is_active
-          ? "AI agent will now trigger alerts for this rule."
-          : "No alerts will be triggered by this rule.",
+          ? "AI engine is now monitoring for this rule."
+          : "Monitoring for this rule has been suspended.",
       });
     },
     onError: (err: any) => {
@@ -128,7 +128,7 @@ const AlertRules = () => {
     mutationFn: (id: string) => api.rules.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alert-rules"] });
-      toast({ title: "🗑️ Rule Deleted", variant: "destructive" });
+      toast({ title: "Protocol Removed", variant: "destructive" });
     },
     onError: (err: any) => {
       toast({ title: "Failed to delete rule", description: err.message, variant: "destructive" });

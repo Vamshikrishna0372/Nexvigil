@@ -71,18 +71,32 @@ async def get_media(
     if not relative_path:
          raise HTTPException(status_code=404, detail="File not found on server")
          
-    # Validate file path safety & existence
-    full_path = Path(settings.MEDIA_DIR) / relative_path
+    # Sanitize and resolve the path
+    # If the stored path starts with '/media/', strip it because settings.MEDIA_DIR already points to media/
+    clean_rel_path = relative_path.lstrip("/")
+    if clean_rel_path.startswith("media/"):
+        clean_rel_path = clean_rel_path.replace("media/", "", 1)
+        
+    full_path = Path(settings.MEDIA_DIR) / clean_rel_path
+    
+    logger.info(f"Streaming media from: {full_path}")
     
     if not full_path.exists():
-         raise HTTPException(status_code=404, detail="File missing on disk")
+         raise HTTPException(status_code=404, detail=f"File missing on disk at {full_path}")
          
     # Stream response
     def iterfile():
         with open(full_path, mode="rb") as file_like:
             yield from file_like
 
-    media_mime = "video/mp4" if media_type == "video" else "image/jpeg"
+    # Determine correct MIME type from extension
+    media_mime = "image/jpeg"
+    if media_type == "video":
+        if str(full_path).lower().endswith(".webm"):
+            media_mime = "video/webm"
+        else:
+            media_mime = "video/mp4"
+
     return StreamingResponse(iterfile(), media_type=media_mime)
 
 @router.get("/recordings", status_code=200)
@@ -110,6 +124,8 @@ async def list_recordings(
             "object": r.get("object_detected"),
             "timestamp": r.get("created_at"),
             "video_path": r.get("video_path"),
+            "screenshot_path": r.get("screenshot_path"),
+            "duration_seconds": r.get("duration_seconds"),
             "severity": r.get("severity")
         } for r in results]
     }

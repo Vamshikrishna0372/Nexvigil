@@ -175,7 +175,13 @@ export const api = {
       if (pathOrUrl.startsWith("http")) return pathOrUrl;
 
       const base = API_BASE.replace(/\/api\/v1\/?$/, "");
-      const cleanPath = pathOrUrl.startsWith("/") ? pathOrUrl.slice(1) : pathOrUrl;
+      let cleanPath = pathOrUrl.startsWith("/") ? pathOrUrl.slice(1) : pathOrUrl;
+
+      // Ensure it starts with media/
+      if (!cleanPath.startsWith("media/")) {
+        cleanPath = `media/${cleanPath}`;
+      }
+
       return `${base}/${cleanPath}${cleanPath.includes('?') ? '&' : '?'}ngrok-skip-browser-warning=true`;
     },
     getScreenshotUrl: (pathOrUrl: string) => {
@@ -183,7 +189,13 @@ export const api = {
       if (pathOrUrl.startsWith("http")) return pathOrUrl;
 
       const base = API_BASE.replace(/\/api\/v1\/?$/, "");
-      const cleanPath = pathOrUrl.startsWith("/") ? pathOrUrl.slice(1) : pathOrUrl;
+      let cleanPath = pathOrUrl.startsWith("/") ? pathOrUrl.slice(1) : pathOrUrl;
+
+      // Ensure it starts with media/
+      if (!cleanPath.startsWith("media/")) {
+        cleanPath = `media/${cleanPath}`;
+      }
+
       return `${base}/${cleanPath}${cleanPath.includes('?') ? '&' : '?'}ngrok-skip-browser-warning=true`;
     },
     getToken: () => localStorage.getItem("nexvigil_token") || ""
