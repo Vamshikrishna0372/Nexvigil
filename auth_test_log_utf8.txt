@@ -1,0 +1,76 @@
+﻿[dotenv@17.3.1] injecting env (0) from .env -- tip: ≡ƒñû agentic secret storage: https://dotenvx.com/as2
+node : C:\Users\Vamshikri
+shna\Desktop\Nexvigil\Nex
+vigil_backend\node_module
+s\passport-oauth2\lib\str
+ategy.js:87
+At line:1 char:1
++ node Nexvigil_backend/a
+uth_server.js > 
+auth_test_log.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo       
+       : NotSpecified:   
+  (C:\Users\Vamshi...\   
+ strategy.js:87:Strin    
+g) [], RemoteExcepti    
+on
+    + FullyQualifiedErro 
+   rId : NativeCommandE  
+  rror
+ 
+  if (!options.clientID) 
+{ throw new TypeError('OA
+uth2Strategy requires a 
+clientID option'); }
+                         
+  ^
+
+TypeError: 
+OAuth2Strategy requires 
+a clientID option
+    at 
+Strategy.OAuth2Strategy (
+C:\Users\Vamshikrishna\De
+sktop\Nexvigil\Nexvigil_b
+ackend\node_modules\passp
+ort-oauth2\lib\strategy.j
+s:87:34)
+    at new Strategy (C:\U
+sers\Vamshikrishna\Deskto
+p\Nexvigil\Nexvigil_backe
+nd\node_modules\passport-
+google-oauth20\lib\strate
+gy.js:52:18)
+    at 
+Object.<anonymous> (C:\Us
+ers\Vamshikrishna\Desktop
+\Nexvigil\Nexvigil_backen
+d\auth_server.js:70:14)
+    at Module._compile (n
+ode:internal/modules/cjs/
+loader:1562:14)
+    at Object..js (node:i
+nternal/modules/cjs/loade
+r:1699:10)
+    at Module.load (node:
+internal/modules/cjs/load
+er:1313:32)
+    at Function._load (no
+de:internal/modules/cjs/l
+oader:1123:12)
+    at 
+TracingChannel.traceSync 
+(node:diagnostics_channel
+:322:14)
+    at wrapModuleLoad (no
+de:internal/modules/cjs/l
+oader:217:24)
+    at Function.executeUs
+erEntryPoint [as 
+runMain] (node:internal/m
+odules/run_main:170:5)
+
+Node.js v22.13.1

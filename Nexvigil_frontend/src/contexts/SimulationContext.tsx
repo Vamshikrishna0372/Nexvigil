@@ -146,23 +146,10 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
   });
   const [riskScore, setRiskScore] = useState(72);
 
-  // Simulate new alerts every 8-15 seconds
+  // Requirement: DISABLE DEMO SIMULATION (Rely on Real AI Agent)
   useEffect(() => {
-    if (!aiEngine.online) return;
-    const interval = setInterval(() => {
-      const newAlert = generateAlert(cameras);
-      setAlerts(prev => [newAlert, ...prev].slice(0, 100));
-      setCameras(prev => prev.map(c => 
-        c.name === newAlert.camera ? { ...c, detection: `${newAlert.object} — ${newAlert.confidence}%`, recording: true, lastActive: new Date() } : c
-      ));
-      setTimeout(() => {
-        setCameras(prev => prev.map(c =>
-          c.name === newAlert.camera ? { ...c, detection: null, recording: false } : c
-        ));
-      }, 5000);
-      setRiskScore(prev => Math.min(100, Math.max(0, prev + (Math.random() > 0.5 ? 1 : -1))));
-    }, Math.random() * 7000 + 8000);
-    return () => clearInterval(interval);
+    // Random alert generation is now disabled to maintain professional data integrity.
+    return;
   }, [aiEngine.online, cameras]);
 
   useEffect(() => {

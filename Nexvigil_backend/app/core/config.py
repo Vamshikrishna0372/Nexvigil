@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     RATE_LIMIT_ALERTS: str = "60/minute"
     RATE_LIMIT_ANALYTICS: str = "100/minute"
 
-    MEDIA_DIR: str = "media"
+    MEDIA_DIR: str = "uploads"
     MAX_STORAGE_PER_USER_MB: int = 2048
 
     @property
@@ -64,9 +64,11 @@ class Settings(BaseSettings):
         # origins.append("https://nexvigil.vercel.app") 
         return list(set(origins))  # deduplicate
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": True,
+        "extra": "ignore" # STOPS SHUTDOWN ON UNRECOGNIZED ENV VARS (Pydantic V2 Fix)
+    }
 
 
 @lru_cache()

@@ -26,10 +26,19 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Use
         if user is None:
              raise credentials_exception
         
+        # PROVIDE FALLBACKS FOR MISSING FIELDS (Stops 500/ValidationError)
+        user["name"] = user.get("name") or user.get("displayName") or user.get("email", "").split("@")[0] or "NexVigil User"
+        user["role"] = user.get("role") or "user"
+        user["status"] = user.get("status") or "active"
+
         if user.get("status") != "active":
              raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")
              
         user["id"] = str(user["_id"])
+        
+        # log for debugging validation errors
+        print(f"✅ Auth Sync SUCCESS: {user.get('email')} [Role: {user.get('role')}]")
+        
         return UserResponse(**user)
         
     except JWTError:

@@ -10,6 +10,7 @@ import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 const Recordings = () => {
   const [search, setSearch] = useState("");
@@ -133,12 +134,32 @@ const Recordings = () => {
                 </div>
 
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100 z-20">
-                  <Button
-                    className="rounded-full w-14 h-14 bg-indigo-500 text-white shadow-xl shadow-indigo-500/30 active:scale-95"
-                    onClick={() => r.video_path && window.open(api.media.getVideoUrl(r.video_path), '_blank')}
-                  >
-                    <Play className="w-6 h-6 fill-current ml-1" />
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        className="rounded-full w-14 h-14 bg-indigo-500 text-white shadow-xl shadow-indigo-500/30 active:scale-95"
+                      >
+                        <Play className="w-6 h-6 fill-current ml-1" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl p-0 overflow-hidden bg-black border-none rounded-[2rem]">
+                      <div className="aspect-video w-full bg-black flex items-center justify-center relative">
+                         <video 
+                           controls 
+                           autoPlay 
+                           className="w-full h-full object-contain"
+                           src={api.media.getVideoUrl(r.video_path)}
+                         >
+                           Your browser does not support the video tag.
+                         </video>
+                         <div className="absolute top-4 left-4 z-50">
+                            <Badge className="bg-indigo-500/80 backdrop-blur-md uppercase tracking-widest text-[10px] py-1 px-3">
+                               Forensic Segment: {r.id?.slice(0,8)}
+                            </Badge>
+                         </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
 
                 <div className="absolute bottom-4 left-4 z-10">

@@ -284,6 +284,6 @@ class AnalyticsService:
              
         cursor = db.db["time_series_stats"].find(query).sort("timestamp", 1)
         data = await cursor.to_list(None)
-        return [{"timestamp": d["timestamp"], "value": d["value"]} for d in data]
+        return [{"timestamp": d["timestamp"].isoformat() if isinstance(d.get("timestamp"), datetime) else str(d.get("timestamp", "")), "value": d["value"]} for d in data]
 
 analytics_service = AnalyticsService()

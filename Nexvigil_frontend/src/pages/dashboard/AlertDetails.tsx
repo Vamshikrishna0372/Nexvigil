@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Download, Trash2, Camera, Clock, Target, Shield, Video, AlertTriangle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,8 @@ const AlertDetails = () => {
     },
     enabled: !!id
   });
+
+  const [hasVideoError, setHasVideoError] = useState(false);
 
   const deleteMutation = useMutation({
     mutationFn: async () => api.alerts.delete(id!),
@@ -117,7 +120,7 @@ const AlertDetails = () => {
             </div>
             <div className="aspect-video relative flex items-center justify-center bg-zinc-950">
               {(() => {
-                if (alert.video_path) {
+                if (alert.video_path && !hasVideoError) {
                   const pathWithoutQuery = alert.video_path.split('?')[0];
                   const ext = pathWithoutQuery.split('.').pop()?.toLowerCase();
                   if (ext === 'mp4' || ext === 'webm') {
@@ -129,7 +132,10 @@ const AlertDetails = () => {
                         className="w-full h-full object-contain"
                         autoPlay={false}
                         preload="auto"
-                        onError={(e) => console.error("Video load error:", e)}
+                        onError={(e) => {
+                          console.error("Video load error:", e);
+                          setHasVideoError(true);
+                        }}
                       >
                         <source src={videoUrl} type={`video/${ext === 'mp4' ? 'mp4' : 'webm'}`} />
                         Your browser does not support the video tag.
@@ -140,8 +146,20 @@ const AlertDetails = () => {
                 return (
                   <div className="text-center text-muted-foreground/40 p-12">
                     <Video className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                    <p className="text-sm font-bold">Temporal buffer not found</p>
-                    <p className="text-xs opacity-60 mt-1 max-w-[200px] mx-auto">Video evidence stream was not persisted or is currently unavailable.</p>
+                    <p className="text-sm font-bold">Evidence Stream Unavailable</p>
+                    <p className="text-xs opacity-60 mt-1 max-w-[200px] mx-auto">
+                        {hasVideoError ? "The video file format is unsupported or the link is severed." : "Temporal buffer not found for this event."}
+                    </p>
+                    {hasVideoError && (
+                        <Button 
+                            variant="link" 
+                            size="sm" 
+                            className="mt-4 text-primary"
+                            onClick={() => window.open(videoUrl, '_blank')}
+                        >
+                            Open raw media in new tab
+                        </Button>
+                    )}
                   </div>
                 );
               })()}

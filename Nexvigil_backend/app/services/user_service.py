@@ -22,7 +22,9 @@ class UserService:
             "timestamp": datetime.now(timezone.utc)
         }
         try:
-             await db.client[db.db.name][self.audit_collection].insert_one(log_entry)
+            database = await db.get_database()
+            if database:
+                 await database[self.audit_collection].insert_one(log_entry)
         except Exception as e:
             logger.error(f"Failed to write audit log: {e}")
 
@@ -75,10 +77,14 @@ class UserService:
         
         created_user = await db.client[db.db.name][self.collection_name].find_one({"_id": result.inserted_id})
         
-        # Convert _id to str for Pydantic
         created_user["id"] = str(created_user["_id"])
         
-        return UserResponse(**created_user)
+        # Ensure fallbacks
+        created_user["name"] = created_user.get("name") or created_user.get("displayName") or created_user.get("email").split("@")[0]
+        created_user["role"] = created_user.get("role") or "user"
+        created_user["status"] = created_user.get("status") or "active"
+
+        return UserResponse.model_validate(created_user)
 
     async def authenticate_user(self, user_in: UserLogin) -> Token:
         user = await self.get_user_by_email(user_in.email)
@@ -89,6 +95,14 @@ class UserService:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password"
+            )
+            
+        # Handle accounts without local passwords (e.g. Google-only users)
+        if "hashed_password" not in user:
+            await self._log_audit("login_attempt", user_in.email, False, {"reason": "no_local_password"})
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This account is registered via Google. Please use the 'Sign in with Google' button."
             )
             
         if not verify_password(user_in.password, user["hashed_password"]):
@@ -116,9 +130,15 @@ class UserService:
         # Create Token
         access_token = create_access_token(subject=str(user["_id"]), role=user["role"])
         
-        # Prepare response
-        user["id"] = str(user["_id"])
-        user_response = UserResponse(**user)
+        # Use robust serialization to convert ObjectId/datetime before validation
+        from app.utils import serialize_mongo
+        clean_user = serialize_mongo(user)
+        
+        # Ensure 'id' field is present for the schema (FastAPI expects 'id' over '_id')
+        if "_id" in clean_user and "id" not in clean_user:
+            clean_user["id"] = clean_user["_id"]
+            
+        user_response = UserResponse.model_validate(clean_user)
         
         return Token(
             access_token=access_token,
@@ -128,9 +148,12 @@ class UserService:
 
     async def get_users(self, skip: int = 0, limit: int = 100) -> List[dict]:
         cursor = db.client[db.db.name][self.collection_name].find().skip(skip).limit(limit).sort("created_at", -1)
-        users = await cursor.to_list(None)
+        users = await cursor.to_list(length=limit)
         for u in users:
             u["id"] = str(u["_id"])
+            u["name"] = u.get("name") or u.get("displayName") or u.get("email").split("@")[0]
+            u["role"] = u.get("role") or "user"
+            u["status"] = u.get("status") or "active"
         return users
 
     async def update_user(self, user_id: str, user_in: any) -> Optional[dict]:
@@ -148,6 +171,9 @@ class UserService:
         )
         if res:
              res["id"] = str(res["_id"])
+             res["name"] = res.get("name") or res.get("displayName") or res.get("email").split("@")[0]
+             res["role"] = res.get("role") or "user"
+             res["status"] = res.get("status") or "active"
         return res
 
     async def delete_user(self, user_id: str) -> bool:

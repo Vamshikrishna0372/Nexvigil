@@ -24,15 +24,22 @@ export const useAlertNotifications = (pollingInterval = 5000) => {
                 const list = (data as any)?.data || data;
 
                 if (!Array.isArray(list) || list.length === 0) return;
-
                 const latest = list[0];
+                
+                // 1. Requirement: Suppress "Low" severity (Periodic Captures) from Toasts
+                // These are logged but shouldn't clutter the professional UI with popups.
+                if (latest.severity === "low") {
+                    lastAlertIdRef.current = latest.id || latest._id;
+                    return;
+                }
+
                 const alertId = latest.id || latest._id;
 
-                // 1. Skip if already processed
+                // 2. Skip if already processed
                 if (alertId === lastAlertIdRef.current) return;
                 lastAlertIdRef.current = alertId;
 
-                // 2. Debounce Logic: Prevent duplicate messages within 30 seconds
+                // 3. Debounce Logic: Prevent duplicate messages within 30 seconds
                 const now = Date.now();
                 const msgKey = `${latest.display_message || latest.object_detected}_${latest.camera_id}`;
                 if (lastToastTimeRef.current[msgKey] && now - lastToastTimeRef.current[msgKey] < 30000) {
@@ -40,14 +47,14 @@ export const useAlertNotifications = (pollingInterval = 5000) => {
                 }
                 lastToastTimeRef.current[msgKey] = now;
 
-                // 3. Professional Mapping
+                // 4. Professional Mapping
                 const severity = (latest.severity || "info").toLowerCase();
                 const variant = severity === "critical" ? "critical" : severity === "high" ? "warning" : "info";
 
                 const title = latest.display_message || `${latest.object_detected.toUpperCase()} DETECTED`;
                 const description = `Sensor ${latest.camera_id?.slice(-4) || "0000"} — Confidence: ${Math.round((latest.confidence || 0) * 100)}%`;
 
-                // 4. Trigger Professional Toast
+                // 5. Trigger Professional Toast
                 toast({
                     title,
                     description,

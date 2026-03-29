@@ -79,12 +79,19 @@ class AlertService:
         alert_dict["id"] = str(result.inserted_id)
         alert_dict["_id"] = str(result.inserted_id)
         
+        # Safe copy for background tasks (where JSON serialization might happen)
+        alert_bg = alert_dict.copy()
+        if isinstance(alert_bg.get("created_at"), datetime):
+             alert_bg["created_at"] = alert_bg["created_at"].isoformat()
+        if isinstance(alert_bg.get("updated_at"), datetime):
+             alert_bg["updated_at"] = alert_bg["updated_at"].isoformat()
+             
         import asyncio
-        asyncio.create_task(notification_service.send_alert_notification(alert_dict))
+        asyncio.create_task(notification_service.send_alert_notification(alert_bg))
         
         # Trigger Professional Email Alert (Critical events only)
         from app.services.email_service import email_service
-        asyncio.create_task(email_service.send_alert_email(alert_dict))
+        asyncio.create_task(email_service.send_alert_email(alert_bg))
         
         # Log (using 'system' or 'AI' as user_id placeholder)
         await self._log_audit("alert_created_ai", "system_ai", str(result.inserted_id), True, {"severity": severity})

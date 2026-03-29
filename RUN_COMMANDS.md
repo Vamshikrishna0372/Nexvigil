@@ -24,16 +24,9 @@ Double-click the appropriate batch file in the root folder:
 ### 1. Backend API (FastAPI — runs on localhost:8000)
 
 ```powershell
+# THE PERFECT RESET & START COMMAND (Kills stuck processes + starts)
 cd Nexvigil_backend
-
-# First-time setup
-python -m venv venv
-.\venv\Scripts\activate
-pip install -r requirements.txt
-python seed_rules.py        # seed initial DB rules
-
-# Start the Backend
-python main.py
+$p8000 = Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue; if ($p8000) { Stop-Process -Id $p8000.OwningProcess -Force }; python main.py
 ```
 
 > ✅ Backend available at: **http://localhost:8000**  

@@ -13,14 +13,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 class StorageService:
-    recordings_dir = "alerts"
-    screenshots_dir = "alerts"
+    recordings_dir = "videos"
+    screenshots_dir = "screenshots"
     stats_collection = "storage_stats"
     
     def __init__(self):
-        # Create root media dir if not exists
+        # Create root media dir and subdirs if not exists
         os.makedirs(settings.MEDIA_DIR, exist_ok=True)
-        os.makedirs(os.path.join(settings.MEDIA_DIR, "alerts"), exist_ok=True)
+        os.makedirs(os.path.join(settings.MEDIA_DIR, "screenshots"), exist_ok=True)
+        os.makedirs(os.path.join(settings.MEDIA_DIR, "videos"), exist_ok=True)
 
     async def get_storage_stats(self, user_id: str) -> StorageStats:
         if not user_id:
@@ -114,8 +115,8 @@ class StorageService:
             await self.update_storage_stats(user_id, size_mb, 1)
             
             # Return relative path for DB
-            # Point 6 requirement: Ensure paths start with /media/
-            rel_path = f"/media/{folder}/{user_id}/{filename}"
+            # We return just folder/user_id/filename. The service layer will correctly prefix /media/
+            rel_path = f"{folder}/{user_id}/{filename}"
             return rel_path, size_mb
             
         except Exception as e:

@@ -58,13 +58,15 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting up application...")
     try:
-        # Create media directories
+        # Create media directories in 'uploads' as requested by user
         import os
         from pathlib import Path
         media_root = Path(settings.MEDIA_DIR)
         media_root.mkdir(parents=True, exist_ok=True)
-        (media_root / "alerts").mkdir(parents=True, exist_ok=True)
+        (media_root / "screenshots").mkdir(parents=True, exist_ok=True)
+        (media_root / "videos").mkdir(parents=True, exist_ok=True)
         (media_root / "live").mkdir(parents=True, exist_ok=True)
+        (media_root / "alerts").mkdir(parents=True, exist_ok=True) # Backwards compat
         
         await db.connect_to_database()
         
@@ -168,7 +170,9 @@ if not os.path.exists(media_path):
     os.makedirs(media_path, exist_ok=True)
 
 # Mount Media Static Files
+# We mount BOTH /media and /uploads for total compatibility
 app.mount("/media", StaticFiles(directory=media_path), name="media")
+app.mount("/uploads", StaticFiles(directory=media_path), name="uploads")
 
 @app.get("/", tags=["Root"])
 async def root():

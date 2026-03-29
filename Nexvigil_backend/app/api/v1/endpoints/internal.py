@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, Request
+from fastapi import UploadFile, File, Form, APIRouter, Depends, status, Request
 from typing import Optional
 from app.api import deps
 from app.services.camera_service import camera_service
@@ -9,6 +9,7 @@ from app.schemas.analytics import AIMetricsCreate
 from app.services.analytics_service import analytics_service
 from app.core.limiter import limiter
 from app.core.config import settings
+from app.services.storage_service import storage_service
 
 router = APIRouter()
 

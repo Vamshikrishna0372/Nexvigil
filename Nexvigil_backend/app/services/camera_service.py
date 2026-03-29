@@ -265,6 +265,11 @@ class CameraService:
         if health_status not in valid_statuses:
              raise HTTPException(status_code=400, detail="Invalid health status")
              
+        try:
+            oid = ObjectId(camera_id)
+        except:
+             return {"status": "error", "message": "Invalid ID format"}
+
         update_doc = {
             "health_status": health_status,
             "fps": fps,
@@ -277,7 +282,7 @@ class CameraService:
             update_doc["telemetry"] = telemetry
              
         await db.client[db.db.name][self.collection_name].update_one(
-            {"_id": ObjectId(camera_id)},
+            {"_id": oid},
             {"$set": update_doc}
         )
         return {"status": "updated"}

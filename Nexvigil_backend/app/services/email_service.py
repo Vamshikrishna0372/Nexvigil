@@ -19,9 +19,12 @@ class EmailService:
     async def _can_send_email(self, camera_id: str, severity: str, recipient: str) -> bool:
         """
         Check cooldown and daily limit.
-        Only critical alerts trigger emails.
+        Requirement: Allow all captures (including low severity) to trigger emails.
         """
-        if severity.lower() != "critical":
+        # Requirement: "for every capture it will send to gmail"
+        # We now allow 'critical', 'high', 'medium', and 'low' (Periodic Captures)
+        allowed_severities = ["critical", "high", "medium", "low"]
+        if severity.lower() not in allowed_severities:
             return False
 
         # Get current config
@@ -48,17 +51,22 @@ class EmailService:
             logger.warning(f"Daily email limit reached ({daily_count}/{limit}).")
             return False
 
-        # Cooldown check (per camera/rule)
+        # Cooldown check
+        # Requirement: Bypass cooldown for low-severity snapshots to allow frequent updates
+        if severity.lower() == "low":
+            return True
+
         cooldown_mins = config.get("email_cooldown_minutes", 5)
         cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=cooldown_mins)
         
         last_email = await db.db[self.log_collection].find_one({
             "camera_id": camera_id,
+            "severity": severity, # Cooldown per severity
             "timestamp": {"$gte": cutoff_time}
         })
         
         if last_email:
-            logger.info(f"Email cooldown active for camera {camera_id}. Skipping.")
+            logger.info(f"Email cooldown active for {severity} alert on camera {camera_id}.")
             return False
 
         return True
@@ -196,7 +204,7 @@ class EmailService:
                                         
                                         <tr>
                                             <td style="text-align: center; padding-top: 35px;">
-                                                <a href="http://localhost:8080/dashboard/alerts/{alert.get('id')}" style="background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-weight: bold; font-size: 15px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">
+                                                <a href="{settings.FRONTEND_URL}/dashboard/alerts/{alert.get('id')}" style="background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-weight: bold; font-size: 15px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">
                                                     Review Full Investigation
                                                 </a>
                                             </td>
@@ -221,7 +229,7 @@ class EmailService:
         """
 
         msg = MIMEMultipart()
-        msg['From'] = smtp_user
+        msg['From'] = f"Nexvigil Command Center <{smtp_user}>"
         msg['To'] = recipient
         msg['Subject'] = subject
         msg.attach(MIMEText(body_html, 'html'))

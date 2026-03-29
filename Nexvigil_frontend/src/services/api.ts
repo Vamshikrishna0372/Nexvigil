@@ -25,6 +25,7 @@ const getApiBase = () => {
 };
 
 export const API_BASE = getApiBase();
+export const AUTH_BASE = "http://localhost:8081"; 
 
 // Generic fetch wrapper with auth
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<{ data: T | null; error: string | null }> {
@@ -88,6 +89,17 @@ export const api = {
       request("/auth/register", { method: "POST", body: JSON.stringify({ name, email, password }) }),
     me: () => request("/auth/me"),
     updateMe: (data: any) => request("/auth/me", { method: "PUT", body: JSON.stringify(data) }),
+  },
+
+  // Node.js Auth (Google OAuth)
+  nodeAuth: {
+    getUser: () => fetch(`${AUTH_BASE}/auth/user`, { 
+      credentials: "include",
+      headers: { "ngrok-skip-browser-warning": "true" }
+    }).then(res => res.json()),
+    logout: () => fetch(`${AUTH_BASE}/logout`, { 
+      credentials: "include" 
+    })
   },
 
   // Alerts

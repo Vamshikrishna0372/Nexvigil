@@ -18,6 +18,7 @@ export interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  loading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
@@ -32,20 +33,80 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const stored = localStorage.getItem("nexvigil_user");
     return stored ? JSON.parse(stored) : null;
   });
+  const [loading, setLoading] = useState(true);
 
-  // Check token validity on mount (optional, or rely on API 401 interceptor)
+  // Check token/session validity on mount
   useEffect(() => {
     const token = localStorage.getItem("nexvigil_token");
-    if (token && !user) {
-      // Verify me
-      api.auth.me().then(({ data, error }) => {
-        if (data) setUser(data as any);
-        else if (error) {
-          localStorage.removeItem("nexvigil_token");
-          localStorage.removeItem("nexvigil_user");
+    
+    const checkAuth = async () => {
+      try {
+        // 1. Check URL-based token handover (HIGHEST PRIORITY)
+        const params = new URLSearchParams(window.location.search);
+        const authSuccess = params.get("auth_success");
+        const dataParam = params.get("data");
+
+        if (authSuccess === "true" && dataParam) {
+          try {
+            const parsedData = JSON.parse(decodeURIComponent(dataParam));
+            const userData = parsedData.user || parsedData; // Fallback for old structure
+            
+            console.log('✅ Auth Handover SUCCESS:', userData.displayName || userData.name);
+            
+            const googleUser: AuthUser = {
+              id: userData.id || userData._id || "google-user",
+              name: userData.displayName || userData.name || "Google User",
+              email: userData.email || "",
+              avatar: userData.profilePicture || userData.avatar || "",
+              role: (userData.role as UserRole) || "user"
+            };
+            
+            setUser(googleUser);
+            localStorage.setItem("nexvigil_user", JSON.stringify(googleUser));
+            localStorage.setItem("nexvigil_token", parsedData.token);
+            
+            // Clean URL and finalize loading
+            window.history.replaceState({}, document.title, window.location.pathname);
+            setLoading(false);
+            return;
+          } catch (e) {
+            console.error("Auth handover failed:", e);
+          }
         }
-      });
-    }
+
+        // 2. Check local session (Token-based)
+        if (token && !user) {
+          const { data } = await api.auth.me();
+          if (data) {
+            setUser(data as any);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // 3. Fallback: Node Auth API (Cookies) - ONLY check if we don't have a user but might have a session indicator
+        if (!user && (token || document.cookie.includes("connect.sid"))) {
+            const result = await api.nodeAuth.getUser();
+            if (result && result.authenticated && result.user) {
+              const googleUser: AuthUser = {
+                id: result.user._id || result.user.id || "google-user",
+                name: result.user.displayName || "Google User",
+                email: result.user.email || "",
+                avatar: result.user.profilePicture || "",
+                role: result.user.role || "user"
+              };
+              setUser(googleUser);
+              localStorage.setItem("nexvigil_user", JSON.stringify(googleUser));
+            }
+        }
+      } catch (err) {
+        console.debug("Auth check finalized.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -55,7 +116,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { success: false, error: error || "Login failed" };
     }
 
-    // Config matches Token schema: access_token, user
     const { access_token, user: userData } = data;
 
     if (!access_token || !userData) {
@@ -76,23 +136,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { success: false, error: error || "Registration failed" };
     }
 
-    // Auto login after register? Or redirect to login? 
-    // Let's assume auto-login if backend returns token, or just return success so UI can redirect.
-    // Backend register endpoint only returns UserResponse, not Token.
-    // So we return success and let UI redirect to login or trigger login.
-
-    // Wait, prompt says "navigate('/dashboard')" in Register.tsx on success.
-    // That implies auto-login. But backend register returns UserResponse.
-    // We should call login() here or change Register.tsx to redirect to /login.
-    // Let's call login() here internally.
-
     return await login(email, password);
   }, [login]);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     setUser(null);
     localStorage.removeItem("nexvigil_user");
     localStorage.removeItem("nexvigil_token");
+
+    try {
+      await api.nodeAuth.logout();
+    } catch (err) {
+      console.error("Logout error", err);
+    }
+
     window.location.href = "/login";
   }, []);
 
@@ -100,6 +157,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={{
       user,
       isAuthenticated: !!user,
+      loading,
       login,
       register,
       logout,
