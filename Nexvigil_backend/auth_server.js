@@ -91,7 +91,7 @@ app.use(passport.session());
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:8081/auth/google/callback"
+    callbackURL: process.env.CALLBACK_URL || "http://localhost:8081/auth/google/callback"
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
@@ -159,16 +159,16 @@ app.get('/auth/google/callback', (req, res, next) => {
   passport.authenticate('google', (err, user, info) => {
     if (err) {
       console.error('❌ Passport Auth Error (err):', err);
-      return res.redirect('http://localhost:8080/login?error=auth_failed');
+      return res.redirect(`${FRONTEND_LOGIN}?error=auth_failed`);
     }
     if (!user) {
       console.error('❌ Passport Auth Failure (no user):', info);
-      return res.redirect('http://localhost:8080/login?error=no_user');
+      return res.redirect(`${FRONTEND_LOGIN}?error=no_user`);
     }
       req.logIn(user, (err) => {
         if (err) {
           console.error('❌ req.logIn Error:', err);
-          return res.redirect('http://localhost:8080/login?error=session_failed');
+          return res.redirect(`${FRONTEND_LOGIN}?error=session_failed`);
         }
         
         console.log('✨ Session established. Handing over to frontend...');

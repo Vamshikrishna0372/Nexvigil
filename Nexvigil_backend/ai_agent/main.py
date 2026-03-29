@@ -158,7 +158,8 @@ def yolo_manager():
                 if frame is None or fid == last_processed.get(cid): continue
                 
                 # Inference
-                with yolo_lock: results = model(frame, verbose=False, imgsz=TARGET_W, conf=0.15)
+                # Increased native confidence from 0.15 to 0.50 to strictly eliminate dark-frame hallucinations
+                with yolo_lock: results = model(frame, verbose=False, imgsz=TARGET_W, conf=0.50)
                 res = results[0]; last_processed[cid] = fid
                 
                 visual_detections = []
@@ -167,9 +168,14 @@ def yolo_manager():
                 # 2. Process Detected Objects
                 for b in res.boxes:
                     coords = b.xyxy[0].tolist(); conf = float(b.conf[0]); label = model.names[int(b.cls[0])].lower()
+                    
+                    # Hard floor for confidence regardless of user rules to prevent noise
+                    if conf < 0.50:
+                        continue
+                        
                     entry = {"box": coords, "label": label, "conf": conf, "severity": "low"}
                     
-                    if conf > 0.2:
+                    if conf >= 0.50:
                         norm = CLASS_MAP.get(label, label); triggered = None
                         for rule in active_rules:
                             if not rule.get("is_active", True) or not is_time_allowed(rule.get("time_restriction")): continue

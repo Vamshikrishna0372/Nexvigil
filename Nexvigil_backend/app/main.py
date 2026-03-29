@@ -174,6 +174,49 @@ if not os.path.exists(media_path):
 app.mount("/media", StaticFiles(directory=media_path), name="media")
 app.mount("/uploads", StaticFiles(directory=media_path), name="uploads")
 
+import httpx
+from fastapi.responses import RedirectResponse
+
+@app.get("/auth/google", tags=["Auth Proxy"])
+async def auth_google_proxy():
+    """Proxy the login init request to the internal Node.js auth server"""
+    async with httpx.AsyncClient(follow_redirects=False) as client:
+        try:
+            response = await client.get("http://localhost:8081/auth/google")
+            google_url = response.headers.get("location")
+            if google_url:
+                return RedirectResponse(url=google_url, status_code=302)
+        except Exception as e:
+            logger.error(f"Auth Proxy Error: {e}")
+        
+    return RedirectResponse(
+        url=f"{settings.FRONTEND_LOGIN_URL}?error=auth_proxy_down", 
+        status_code=302
+    )
+
+@app.get("/auth/google/callback", tags=["Auth Proxy"])
+async def auth_google_callback_proxy(request: Request):
+    """Proxy the callback from Google back to the internal Node.js auth server"""
+    async with httpx.AsyncClient(follow_redirects=False) as client:
+        try:
+            url = f"http://localhost:8081/auth/google/callback?{request.url.query}"
+            # Pass along the cookie to maintain Express session if needed
+            response = await client.get(url, headers={"Cookie": request.headers.get("cookie", "")})
+            redirect_target = response.headers.get("location")
+            if redirect_target:
+                # We need to relay the cookie that Node tries to set back to the client
+                final_response = RedirectResponse(url=redirect_target, status_code=302)
+                if "set-cookie" in response.headers:
+                    final_response.headers["set-cookie"] = response.headers["set-cookie"]
+                return final_response
+        except Exception as e:
+            logger.error(f"Auth Proxy Error: {e}")
+
+    return RedirectResponse(
+        url=f"{settings.FRONTEND_LOGIN_URL}?error=auth_proxy_down", 
+        status_code=302
+    )
+
 @app.get("/", tags=["Root"])
 async def root():
     return {

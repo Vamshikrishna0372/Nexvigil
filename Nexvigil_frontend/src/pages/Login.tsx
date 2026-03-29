@@ -19,7 +19,8 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { login } = useAuth();
-  const AUTH_BASE = import.meta.env.VITE_AUTH_BASE_URL || "http://localhost:8081";
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+  const BACKEND_URL = import.meta.env.VITE_AUTH_BASE_URL || import.meta.env.VITE_API_URL || API_BASE.replace("/api/v1", "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,7 +163,7 @@ const Login = () => {
               </div>
 
               <a
-                href={`${AUTH_BASE}/auth/google`}
+                href={`${BACKEND_URL}/auth/google`}
                 className="w-full h-11 rounded-xl bg-white text-[#1f1f1f] hover:bg-gray-50 flex items-center justify-center transition-all duration-300 text-sm font-semibold shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] group overflow-hidden"
               >
                 <div className="mr-3 bg-white p-1 rounded-sm">
