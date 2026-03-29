@@ -113,7 +113,7 @@ class EmailService:
             return
 
         # Format email
-        subject = f"Nexvigil Alert – {alert.get('object_detected', 'Unknown').capitalize()}"
+        subject = f"ALERT: {alert.get('object_detected', 'Unknown').capitalize()} Detected"
         
         # Camera Details
         from bson import ObjectId

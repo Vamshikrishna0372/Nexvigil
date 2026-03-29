@@ -28,10 +28,10 @@ const toastVariants = cva(
     variants: {
       variant: {
         default: "border bg-background/95 backdrop-blur-xl text-foreground shadow-2xl shadow-primary/5",
-        destructive: "border-destructive/30 bg-destructive/10 text-destructive shadow-2xl shadow-destructive/10",
-        critical: "border-destructive/40 bg-card/90 text-destructive-foreground border-l-4 border-l-destructive shadow-2xl",
-        warning: "border-orange-500/40 bg-card/90 text-orange-500 border-l-4 border-l-orange-500 shadow-xl",
-        info: "border-primary/40 bg-card/90 text-primary border-l-4 border-l-primary shadow-xl",
+        destructive: "border-destructive/30 bg-destructive text-destructive-foreground shadow-2xl shadow-destructive/10",
+        critical: "border-none bg-red-600/95 backdrop-blur-xl text-white shadow-[0_10px_40px_-10px_rgba(220,38,38,0.5)] border-l-4 border-l-red-800",
+        warning: "border-none bg-orange-500/95 backdrop-blur-xl text-white shadow-[0_10px_40px_-10px_rgba(249,115,22,0.5)] border-l-4 border-l-orange-700",
+        info: "border-none bg-blue-600/95 backdrop-blur-xl text-white shadow-[0_10px_40px_-10px_rgba(37,99,235,0.5)] border-l-4 border-l-blue-800",
       },
     },
     defaultVariants: {

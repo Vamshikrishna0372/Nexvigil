@@ -33,33 +33,38 @@ export const useAlertNotifications = (pollingInterval = 5000) => {
                     return;
                 }
 
-                const alertId = latest.id || latest._id;
-
-                // 2. Skip if already processed
-                if (alertId === lastAlertIdRef.current) return;
-                lastAlertIdRef.current = alertId;
-
-                // 3. Debounce Logic: Prevent duplicate messages within 30 seconds
-                const now = Date.now();
-                const msgKey = `${latest.display_message || latest.object_detected}_${latest.camera_id}`;
-                if (lastToastTimeRef.current[msgKey] && now - lastToastTimeRef.current[msgKey] < 30000) {
-                    return;
-                }
-                lastToastTimeRef.current[msgKey] = now;
-
-                // 4. Professional Mapping
+                // 2. Map Professional Values
                 const severity = (latest.severity || "info").toLowerCase();
                 const variant = severity === "critical" ? "critical" : severity === "high" ? "warning" : "info";
+                const title = latest.display_message || latest.rule_name || `${String(latest.object_detected).toUpperCase()} SECURITY EVENT`;
+                const description = `Source: CAM-${latest.camera_id?.slice(-4) || "0000"} | Confidence: ${Math.round((latest.confidence || 0) * 100)}%`;
 
-                const title = latest.display_message || `${latest.object_detected.toUpperCase()} DETECTED`;
-                const description = `Sensor ${latest.camera_id?.slice(-4) || "0000"} — Confidence: ${Math.round((latest.confidence || 0) * 100)}%`;
+                const alertId = latest.id || latest._id;
+
+                // 3. Skip if already processed the same unique event ID
+                if (alertId === lastAlertIdRef.current) return;
+                
+                // 4. Ultra-Strict Debounce Logic: Prevent duplicate class-messages from the same camera for 60 seconds
+                const now = Date.now();
+                const msgKey = `${latest.object_detected}_${latest.camera_id}`;
+                
+                if (lastToastTimeRef.current[msgKey] && (now - lastToastTimeRef.current[msgKey] < 60000)) {
+                    // It's a duplicate spam within the 60s cooldown.
+                    // IMPORTANT: We silently update the alertId so we don't get stuck infinitely trying to toast it
+                    lastAlertIdRef.current = alertId;
+                    return; 
+                }
+
+                // If it passes all gates, update refs and trigger the UI
+                lastAlertIdRef.current = alertId;
+                lastToastTimeRef.current[msgKey] = now;
 
                 // 5. Trigger Professional Toast
                 toast({
-                    title,
+                    title: `🚨 ${title}`,
                     description,
                     variant: variant as any,
-                    duration: 6000, // 6 seconds auto-dismiss
+                    duration: 8000, 
                 });
 
             } catch (err) {
