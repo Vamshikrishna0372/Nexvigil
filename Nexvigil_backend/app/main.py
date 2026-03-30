@@ -178,19 +178,35 @@ import httpx
 from fastapi.responses import RedirectResponse
 
 @app.get("/auth/google", tags=["Auth Proxy"])
-async def auth_google_proxy():
+async def auth_google_proxy(request: Request):
     """Proxy the login init request to the internal Node.js auth server"""
+    # Get frontend origin to support both localhost and production
+    origin = request.query_params.get("origin") or request.headers.get("origin") or request.headers.get("referer", "")
+    
+    # Simple URL parse to get base origin if referer is a full path
+    if origin:
+        from urllib.parse import urlparse
+        parsed = urlparse(origin)
+        origin = f"{parsed.scheme}://{parsed.netloc}"
+
+    
     async with httpx.AsyncClient(follow_redirects=False) as client:
         try:
-            response = await client.get("http://localhost:8081/auth/google")
+            url = f"http://localhost:8081/auth/google?origin={origin}"
+            headers = {
+                "X-Forwarded-Host": request.headers.get("host", request.url.hostname),
+                "X-Forwarded-Proto": request.headers.get("x-forwarded-proto", request.url.scheme),
+            }
+            response = await client.get(url, headers=headers)
             google_url = response.headers.get("location")
             if google_url:
                 return RedirectResponse(url=google_url, status_code=302)
         except Exception as e:
             logger.error(f"Auth Proxy Error: {e}")
         
+    frontend_login = f"{origin}/login" if origin else f"{settings.FRONTEND_URL or 'http://localhost:5173'}/login"
     return RedirectResponse(
-        url=f"{settings.FRONTEND_LOGIN_URL}?error=auth_proxy_down", 
+        url=f"{frontend_login}?error=auth_proxy_down", 
         status_code=302
     )
 
@@ -200,8 +216,12 @@ async def auth_google_callback_proxy(request: Request):
     async with httpx.AsyncClient(follow_redirects=False) as client:
         try:
             url = f"http://localhost:8081/auth/google/callback?{request.url.query}"
-            # Pass along the cookie to maintain Express session if needed
-            response = await client.get(url, headers={"Cookie": request.headers.get("cookie", "")})
+            headers = {
+                "Cookie": request.headers.get("cookie", ""),
+                "X-Forwarded-Host": request.headers.get("host", request.url.hostname),
+                "X-Forwarded-Proto": request.headers.get("x-forwarded-proto", request.url.scheme),
+            }
+            response = await client.get(url, headers=headers)
             redirect_target = response.headers.get("location")
             if redirect_target:
                 # We need to relay the cookie that Node tries to set back to the client
@@ -209,11 +229,15 @@ async def auth_google_callback_proxy(request: Request):
                 if "set-cookie" in response.headers:
                     final_response.headers["set-cookie"] = response.headers["set-cookie"]
                 return final_response
+            
+            # If no redirect is given, return the text
+            return JSONResponse(status_code=response.status_code, content={"message": "Callback processed", "data": response.text})
         except Exception as e:
             logger.error(f"Auth Proxy Error: {e}")
 
+    frontend_login = f"{settings.FRONTEND_URL or 'http://localhost:5173'}/login"
     return RedirectResponse(
-        url=f"{settings.FRONTEND_LOGIN_URL}?error=auth_proxy_down", 
+        url=f"{frontend_login}?error=auth_proxy_down_callback", 
         status_code=302
     )
 

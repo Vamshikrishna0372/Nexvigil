@@ -163,7 +163,7 @@ const Login = () => {
               </div>
 
               <a
-                href={`${BACKEND_URL}/auth/google`}
+                href={`${BACKEND_URL}/auth/google?origin=${encodeURIComponent(window.location.origin)}`}
                 className="w-full h-11 rounded-xl bg-white text-[#1f1f1f] hover:bg-gray-50 flex items-center justify-center transition-all duration-300 text-sm font-semibold shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] group overflow-hidden"
               >
                 <div className="mr-3 bg-white p-1 rounded-sm">

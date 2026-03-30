@@ -91,7 +91,8 @@ app.use(passport.session());
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.CALLBACK_URL || "http://localhost:8081/auth/google/callback"
+    callbackURL: "/auth/google/callback",
+    proxy: true
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
@@ -148,27 +149,69 @@ passport.deserializeUser(async (id, done) => {
 // 1. Initiate Google login
 app.get('/auth/google', (req, res, next) => {
   console.log('🚀 Route: /auth/google HIT');
+  const origin = req.query.origin || process.env.FRONTEND_URL || 'http://localhost:5173';
+  const stateStr = Buffer.from(JSON.stringify({ origin })).toString('base64');
+  
+  const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+  const dynamicCallback = isLocal 
+    ? (process.env.LOCAL_CALLBACK_URL || 'http://localhost:8081/auth/google/callback')
+    : (process.env.PROD_CALLBACK_URL || 'https://nonprohibitive-unpraying-casimira.ngrok-free.dev/auth/google/callback');
+
   passport.authenticate('google', { 
-    scope: ['profile', 'email']
+    scope: ['profile', 'email'],
+    state: stateStr,
+    callbackURL: dynamicCallback
   })(req, res, next);
 });
 
 // 2. Handle Google callback
 app.get('/auth/google/callback', (req, res, next) => {
   console.log('🔄 Route: /auth/google/callback HIT');
-  passport.authenticate('google', (err, user, info) => {
+  
+  let targetDashboard = FRONTEND_DASHBOARD;
+  let targetLogin = FRONTEND_LOGIN;
+  let dynamicCallback = process.env.PROD_CALLBACK_URL || 'https://nonprohibitive-unpraying-casimira.ngrok-free.dev/auth/google/callback';
+  
+  if (req.query.state) {
+    try {
+      const stateObj = JSON.parse(Buffer.from(req.query.state, 'base64').toString('utf8'));
+      if (stateObj.origin) {
+        let base = stateObj.origin;
+        if (base.endsWith('/')) base = base.slice(0, -1);
+        
+        // Security checks: prevent Open Redirect by verifying origin is authorized
+        const isAllowedOrigin = allowedOrigins.includes(base) || base.includes('localhost') || base.includes('127.0.0.1');
+        
+        if (isAllowedOrigin) {
+          targetDashboard = `${base}/dashboard`;
+          targetLogin = `${base}/login`;
+          
+          const isLocal = base.includes('localhost') || base.includes('127.0.0.1');
+          dynamicCallback = isLocal 
+            ? (process.env.LOCAL_CALLBACK_URL || 'http://localhost:8081/auth/google/callback')
+            : (process.env.PROD_CALLBACK_URL || 'https://nonprohibitive-unpraying-casimira.ngrok-free.dev/auth/google/callback');
+        } else {
+          console.error(`🚨 Security Alert: Blocked unauthorized OAuth redirect to ${base}`);
+        }
+      }
+    } catch (e) {
+      console.warn('⚠️ Could not parse OAuth state:', e.message);
+    }
+  }
+
+  passport.authenticate('google', { callbackURL: dynamicCallback }, (err, user, info) => {
     if (err) {
       console.error('❌ Passport Auth Error (err):', err);
-      return res.redirect(`${FRONTEND_LOGIN}?error=auth_failed`);
+      return res.redirect(`${targetLogin}?error=auth_failed`);
     }
     if (!user) {
       console.error('❌ Passport Auth Failure (no user):', info);
-      return res.redirect(`${FRONTEND_LOGIN}?error=no_user`);
+      return res.redirect(`${targetLogin}?error=no_user`);
     }
       req.logIn(user, (err) => {
         if (err) {
           console.error('❌ req.logIn Error:', err);
-          return res.redirect(`${FRONTEND_LOGIN}?error=session_failed`);
+          return res.redirect(`${targetLogin}?error=session_failed`);
         }
         
         console.log('✨ Session established. Handing over to frontend...');
@@ -188,7 +231,7 @@ app.get('/auth/google/callback', (req, res, next) => {
         );
 
         if (!authToken) {
-          return res.redirect(`${FRONTEND_LOGIN}?error=token_gen_failed`);
+          return res.redirect(`${targetLogin}?error=token_gen_failed`);
         }
 
         const responseData = encodeURIComponent(JSON.stringify({
@@ -202,7 +245,7 @@ app.get('/auth/google/callback', (req, res, next) => {
           }
         }));
         
-        return res.redirect(`${FRONTEND_DASHBOARD}?auth_success=true&data=${responseData}`);
+        return res.redirect(`${targetDashboard}?auth_success=true&data=${responseData}`);
       });
   })(req, res, next);
 });

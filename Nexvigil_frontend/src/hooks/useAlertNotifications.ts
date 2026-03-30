@@ -42,15 +42,27 @@ export const useAlertNotifications = (pollingInterval = 5000) => {
                 const alertId = latest.id || latest._id;
 
                 // 3. Skip if already processed the same unique event ID
+                if (lastAlertIdRef.current === null) {
+                    // On first run, we only store the latest ID so we don't spam 
+                    // old alerts that the DB already has on component mount.
+                    lastAlertIdRef.current = alertId;
+                    return;
+                }
+                
                 if (alertId === lastAlertIdRef.current) return;
                 
-                // 4. Ultra-Strict Debounce Logic: Prevent duplicate class-messages from the same camera for 60 seconds
+                // 4. Stale Detection Check: Do not toast alerts older than 15 seconds
+                // This prevents "delayed" or "queued" messages from popping up on login/refresh.
+                const createdAt = new Date(latest.created_at).getTime();
                 const now = Date.now();
+                if (now - createdAt > 15000) {
+                    lastAlertIdRef.current = alertId;
+                    return; 
+                }
+
+                // 5. Ultra-Strict Debounce Logic: Prevent duplicate class-messages from the same camera for 60 seconds
                 const msgKey = `${latest.object_detected}_${latest.camera_id}`;
-                
                 if (lastToastTimeRef.current[msgKey] && (now - lastToastTimeRef.current[msgKey] < 60000)) {
-                    // It's a duplicate spam within the 60s cooldown.
-                    // IMPORTANT: We silently update the alertId so we don't get stuck infinitely trying to toast it
                     lastAlertIdRef.current = alertId;
                     return; 
                 }
