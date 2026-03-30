@@ -9,6 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import { useEffect } from "react";
+
+import { API_BASE } from "@/services/api";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -17,10 +20,24 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const errorParam = params.get("error");
+    if (errorParam) {
+      if (errorParam === "auth_proxy_down") {
+        setError("The authentication service is starting up or unavailable. Please try again in a few seconds.");
+      } else if (errorParam === "auth_failed") {
+        setError("Google authentication failed. Please try again.");
+      } else {
+        setError(`Authentication error: ${errorParam.replace(/_/g, " ")}`);
+      }
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
   const { toast } = useToast();
   const { login } = useAuth();
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
-  const BACKEND_URL = import.meta.env.VITE_AUTH_BASE_URL || import.meta.env.VITE_API_URL || API_BASE.replace("/api/v1", "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,7 +180,7 @@ const Login = () => {
               </div>
 
               <a
-                href={`${BACKEND_URL}/auth/google?origin=${encodeURIComponent(window.location.origin)}`}
+                href={`${API_BASE}/auth/google/login?origin=${encodeURIComponent(window.location.origin)}`}
                 className="w-full h-11 rounded-xl bg-white text-[#1f1f1f] hover:bg-gray-50 flex items-center justify-center transition-all duration-300 text-sm font-semibold shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] group overflow-hidden"
               >
                 <div className="mr-3 bg-white p-1 rounded-sm">

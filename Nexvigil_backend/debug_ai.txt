@@ -1,0 +1,300 @@
+﻿python : <string>:1: 
+FutureWarning: 
+At line:1 char:1
++ python -c "import os; 
+from dotenv import 
+load_dotenv; import 
+google.g ...
++ ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo       
+       : NotSpecified:   
+  (<string>:1: FutureW   
+ arning: :String) [],    
+ RemoteException
+    + FullyQualifiedErro 
+   rId : NativeCommandE  
+  rror
+ 
+
+All support for the 
+`google.generativeai` 
+package has ended. It 
+will no longer be 
+receiving 
+updates or bug fixes. 
+Please switch to the 
+`google.genai` package 
+as soon as possible.
+See README for more 
+details:
+
+https://github.com/google
+-gemini/deprecated-genera
+tive-ai-python/blob/main/
+README.md
+
+Traceback (most recent 
+call last):
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\grpc_helpers.py", 
+line 55, in 
+error_remapped_callable
+    return 
+callable_(*args, 
+**kwargs)
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\grpc\_inter
+ceptor.py", line 276, in 
+__call__
+    response, 
+ignored_call = 
+self._with_call(
+                         
+    ~~~~~~~~~~~~~~~^
+        request,
+        ^^^^^^^^
+    ...<4 lines>...
+        
+compression=compression,
+        
+^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\grpc\_inter
+ceptor.py", line 331, in 
+_with_call
+    return 
+call.result(), call
+           ~~~~~~~~~~~^^
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\grpc\_chann
+el.py", line 438, in 
+result
+    raise self
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\grpc\_inter
+ceptor.py", line 314, in 
+continuation
+    response, call = self
+._thunk(new_method).with_
+call(
+                     ~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~^
+        request,
+        ^^^^^^^^
+    ...<4 lines>...
+        compression=new_c
+ompression,
+        ^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\grpc\_chann
+el.py", line 1173, in 
+with_call
+    return _end_unary_res
+ponse_blocking(state, 
+call, True, None)
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\grpc\_chann
+el.py", line 990, in _end
+_unary_response_blocking
+    raise 
+_InactiveRpcError(state) 
+ # pytype: 
+disable=not-instantiable
+    ^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^
+grpc._channel._InactiveRp
+cError: 
+<_InactiveRpcError of 
+RPC that terminated with:
+	status = 
+StatusCode.NOT_FOUND
+	details = 
+"models/gemini-1.5-flash 
+is not found for API 
+version v1beta, or is 
+not supported for 
+generateContent. Call 
+ListModels to see the 
+list of available models 
+and their supported 
+methods."
+	debug_error_string = 
+"UNKNOWN:Error received 
+from peer 
+ipv4:216.239.34.223:443 
+{grpc_status:5, grpc_mess
+age:"models/gemini-1.5-fl
+ash is not found for API 
+version v1beta, or is 
+not supported for 
+generateContent. Call 
+ListModels to see the 
+list of available models 
+and their supported 
+methods."}"
+>
+
+The above exception was 
+the direct cause of the 
+following exception:
+
+Traceback (most recent 
+call last):
+  File "<string>", line 
+1, in <module>
+    import os; from 
+dotenv import 
+load_dotenv; import 
+google.generativeai as 
+genai; load_dotenv(); key
+=os.getenv('GEMINI_API_KE
+Y'); print(f'KEY: 
+{key}'); genai.configure(
+api_key=key); model=genai
+.GenerativeModel('gemini-
+1.5-flash'); response=mod
+el.generate_content('Hi')
+; print(f'RESULT: 
+{response.text}')
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                 ~~~~~~~~
+~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\gene
+rativeai\generative_model
+s.py", line 331, in 
+generate_content
+    response = self._clie
+nt.generate_content(
+        request,
+        
+**request_options,
+    )
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\ai\g
+enerativelanguage_v1beta\
+services\generative_servi
+ce\client.py", line 835, 
+in generate_content
+    response = rpc(
+        request,
+    ...<2 lines>...
+        
+metadata=metadata,
+    )
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\gapic_v1\method.py",
+ line 128, in __call__
+    return 
+wrapped_func(*args, 
+**kwargs)
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\retry\retry_unary.py
+", line 294, in 
+retry_wrapped_func
+    return retry_target(
+        target,
+    ...<3 lines>...
+        
+on_error=on_error,
+    )
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\retry\retry_unary.py
+", line 156, in 
+retry_target
+    next_sleep = 
+_retry_error_helper(
+        exc,
+    ...<6 lines>...
+        timeout,
+    )
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\retry\retry_base.py"
+, line 216, in 
+_retry_error_helper
+    raise final_exc from 
+source_exc
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\retry\retry_unary.py
+", line 147, in 
+retry_target
+    result = target()
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\timeout.py", line 
+130, in func_with_timeout
+    return func(*args, 
+**kwargs)
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\grpc_helpers.py", 
+line 57, in 
+error_remapped_callable
+    raise exceptions.from
+_grpc_error(exc) from exc
+google.api_core.exception
+s.NotFound: 404 
+models/gemini-1.5-flash 
+is not found for API 
+version v1beta, or is 
+not supported for 
+generateContent. Call 
+ListModels to see the 
+list of available models 
+and their supported 
+methods.
+KEY: AIzaSyCZjjSWFjXliTLct4ar-EXWKvpRO5RfrxM

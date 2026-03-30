@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken');
 
 // Environment Configuration
 const isProduction = process.env.ENVIRONMENT === 'production';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 const FRONTEND_DASHBOARD = process.env.FRONTEND_DASHBOARD_URL || `${FRONTEND_URL}/dashboard`;
 const FRONTEND_LOGIN = process.env.FRONTEND_LOGIN_URL || `${FRONTEND_URL}/login`;
 
@@ -153,9 +153,14 @@ app.get('/auth/google', (req, res, next) => {
   const stateStr = Buffer.from(JSON.stringify({ origin })).toString('base64');
   
   const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
-  const dynamicCallback = isLocal 
-    ? (process.env.LOCAL_CALLBACK_URL || 'http://localhost:8081/auth/google/callback')
-    : (process.env.PROD_CALLBACK_URL || 'https://nonprohibitive-unpraying-casimira.ngrok-free.dev/auth/google/callback');
+  
+  // DYNAMIC CALLBACK: Use PROD_CALLBACK_URL if available, otherwise construct from current host
+  let dynamicCallback = process.env.LOCAL_CALLBACK_URL || 'http://localhost:8081/auth/google/callback';
+  if (!isLocal) {
+    dynamicCallback = process.env.PROD_CALLBACK_URL || `https://${req.headers.host}/auth/google/callback`;
+  }
+
+  console.log(`[OAuth] Init: origin=${origin}, callback=${dynamicCallback}`);
 
   passport.authenticate('google', { 
     scope: ['profile', 'email'],
@@ -170,8 +175,7 @@ app.get('/auth/google/callback', (req, res, next) => {
   
   let targetDashboard = FRONTEND_DASHBOARD;
   let targetLogin = FRONTEND_LOGIN;
-  let dynamicCallback = process.env.PROD_CALLBACK_URL || 'https://nonprohibitive-unpraying-casimira.ngrok-free.dev/auth/google/callback';
-  
+  let dynamicCallback = process.env.LOCAL_CALLBACK_URL || 'http://localhost:8081/auth/google/callback';
   if (req.query.state) {
     try {
       const stateObj = JSON.parse(Buffer.from(req.query.state, 'base64').toString('utf8'));
@@ -180,7 +184,11 @@ app.get('/auth/google/callback', (req, res, next) => {
         if (base.endsWith('/')) base = base.slice(0, -1);
         
         // Security checks: prevent Open Redirect by verifying origin is authorized
-        const isAllowedOrigin = allowedOrigins.includes(base) || base.includes('localhost') || base.includes('127.0.0.1');
+        const isAllowedOrigin = allowedOrigins.includes(base) || 
+                               base.includes('localhost') || 
+                               base.includes('127.0.0.1') || 
+                               base.includes('vercel.app') || 
+                               base.includes('ngrok-free.dev');
         
         if (isAllowedOrigin) {
           targetDashboard = `${base}/dashboard`;
@@ -189,7 +197,7 @@ app.get('/auth/google/callback', (req, res, next) => {
           const isLocal = base.includes('localhost') || base.includes('127.0.0.1');
           dynamicCallback = isLocal 
             ? (process.env.LOCAL_CALLBACK_URL || 'http://localhost:8081/auth/google/callback')
-            : (process.env.PROD_CALLBACK_URL || 'https://nonprohibitive-unpraying-casimira.ngrok-free.dev/auth/google/callback');
+            : (process.env.PROD_CALLBACK_URL || `https://${req.headers.host}/auth/google/callback`);
         } else {
           console.error(`🚨 Security Alert: Blocked unauthorized OAuth redirect to ${base}`);
         }
@@ -198,6 +206,8 @@ app.get('/auth/google/callback', (req, res, next) => {
       console.warn('⚠️ Could not parse OAuth state:', e.message);
     }
   }
+
+  console.log(`[OAuth] Callback: dashboard=${targetDashboard}, callback=${dynamicCallback}`);
 
   passport.authenticate('google', { callbackURL: dynamicCallback }, (err, user, info) => {
     if (err) {

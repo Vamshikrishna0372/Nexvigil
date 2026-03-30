@@ -12,6 +12,8 @@ class AlertBase(BaseModel):
     triggered_rule_id: Optional[str] = None
     rule_name: Optional[str] = None
     display_message: Optional[str] = None
+    description: Optional[str] = None
+
     duration_seconds: Optional[float] = None
 
 class AlertCreate(AlertBase):
@@ -22,6 +24,8 @@ class AlertResponse(AlertBase):
     severity: Optional[str] = "medium"
     camera_id: Optional[str] = "unknown"
     owner_id: Optional[str] = "system"
+    description: Optional[str] = None
+
     is_acknowledged: bool = False
     acknowledged_by: Optional[str] = None
     acknowledged_at: Optional[datetime] = None

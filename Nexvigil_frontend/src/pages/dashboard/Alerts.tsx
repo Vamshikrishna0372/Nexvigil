@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, Filter, Eye, Trash2, CheckCircle, User as UserIcon, Loader2, Camera } from "lucide-react";
+import { Search, Filter, Eye, Trash2, CheckCircle, User as UserIcon, Loader2, Camera, Activity } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -72,6 +72,7 @@ const Alerts = () => {
 
       const { data } = await api.alerts.list(params);
       const res = data as any;
+      console.log("DEBUG: Alerts API Response:", res); // Step 11
       if (res && Array.isArray(res.data)) {
         return res.data.map((a: any, idx: number) => ({
           id: a.id || a._id || `alert-${idx}`,
@@ -83,8 +84,10 @@ const Alerts = () => {
           timestamp: new Date(a.created_at),
           acknowledged: a.is_acknowledged,
           ruleId: a.triggered_rule_id || "System",
-          screenshot: a.screenshot_path
+          screenshot: a.screenshot_path,
+          description: a.description
         }));
+
       }
       return [];
     },
@@ -238,11 +241,17 @@ const Alerts = () => {
                             <span className="text-sm font-bold text-foreground capitalize tracking-tight group-hover/row:text-primary transition-colors truncate">
                               {a.object}
                             </span>
+                            {a.description && (
+                              <p className="text-[10px] text-muted-foreground line-clamp-1 italic max-w-[200px]">
+                                {a.description}
+                              </p>
+                            )}
                             {a.acknowledged && (
                               <span className="text-[10px] text-success font-bold uppercase flex items-center gap-1 mt-0.5">
                                 <CheckCircle className="w-3 h-3" /> Verified
                               </span>
                             )}
+
                           </div>
                         </div>
                       </td>
@@ -330,7 +339,13 @@ const Alerts = () => {
                       <span className="font-bold text-foreground capitalize">{a.object}</span>
                       <Badge variant="outline" className={cn("text-[9px] tracking-widest px-1.5 py-0", s.color, s.border, s.bg)}>{a.severity}</Badge>
                     </div>
+                    {a.description && (
+                      <p className="text-[10px] text-muted-foreground/80 mb-3 italic border-l-2 border-primary/20 pl-2 leading-relaxed">
+                        {a.description}
+                      </p>
+                    )}
                     <span className="text-xs font-mono font-bold text-primary">{a.confidence}%</span>
+
                   </div>
 
                   <div className="flex flex-col gap-1 mb-5 text-xs text-muted-foreground relative z-10">

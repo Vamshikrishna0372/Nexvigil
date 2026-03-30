@@ -8,6 +8,12 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     MONGO_URI: str
     SECRET_KEY: str
+    GEMINI_API_KEY: Optional[str] = None
+    GROQ_API_KEY: Optional[str] = None
+
+
+    # Backend URL
+    BACKEND_URL: str = "http://localhost:8000"
 
     # NGROK public URL (set this when ngrok is running)
     # Example: https://abc123.ngrok-free.app
@@ -41,11 +47,11 @@ class Settings(BaseSettings):
     @property
     def BASE_URL(self) -> str:
         """Determines the correct base URL for API and Media."""
+        # Prefer NGROK_URL if explicitly set for tunneling
         if self.NGROK_URL:
             return self.NGROK_URL.rstrip("/")
-        # If in production and FRONTEND_URL exists, we might still want BASE_URL to point to backend.
-        # But usually in this setup, NGROK_URL is the backend.
-        return "http://localhost:8000"
+        # Fallback to BACKEND_URL from settings (.env)
+        return self.BACKEND_URL.rstrip("/")
 
     @property
     def all_cors_origins(self) -> List[str]:

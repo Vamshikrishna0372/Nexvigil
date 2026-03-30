@@ -4,6 +4,9 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import logging
 import asyncio
+import os
+import platform
+import subprocess
 from datetime import datetime, timedelta
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -57,6 +60,28 @@ async def lifespan(app: FastAPI):
     """
     # Startup
     logger.info("Starting up application...")
+    
+    # [ROBUSTNESS] Ensure Node Auth Server is running
+    import socket
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            if s.connect_ex(('localhost', 8081)) != 0:
+                logger.info("Auth Server (8081) not detected. Launching in background...")
+                # Search for auth_server.js in current directory
+                server_path = os.path.join(os.getcwd(), "auth_server.js")
+                if os.path.exists(server_path):
+                    if platform.system() == "Windows":
+                        # Use 'start' to run in a separate window or background
+                        subprocess.Popen("node auth_server.js", shell=True, cwd=os.getcwd())
+                    else:
+                        subprocess.Popen(["node", "auth_server.js"], cwd=os.getcwd())
+                else:
+                    logger.warning("auth_server.js not found in current directory. Skipping auto-start.")
+            else:
+                logger.info("Auth Server (8081) is already running.")
+    except Exception as e:
+        logger.warning(f"Could not auto-start Auth Server: {e}")
+
     try:
         # Create media directories in 'uploads' as requested by user
         import os
@@ -174,73 +199,6 @@ if not os.path.exists(media_path):
 app.mount("/media", StaticFiles(directory=media_path), name="media")
 app.mount("/uploads", StaticFiles(directory=media_path), name="uploads")
 
-import httpx
-from fastapi.responses import RedirectResponse
-
-@app.get("/auth/google", tags=["Auth Proxy"])
-async def auth_google_proxy(request: Request):
-    """Proxy the login init request to the internal Node.js auth server"""
-    # Get frontend origin to support both localhost and production
-    origin = request.query_params.get("origin") or request.headers.get("origin") or request.headers.get("referer", "")
-    
-    # Simple URL parse to get base origin if referer is a full path
-    if origin:
-        from urllib.parse import urlparse
-        parsed = urlparse(origin)
-        origin = f"{parsed.scheme}://{parsed.netloc}"
-
-    
-    async with httpx.AsyncClient(follow_redirects=False) as client:
-        try:
-            url = f"http://localhost:8081/auth/google?origin={origin}"
-            headers = {
-                "X-Forwarded-Host": request.headers.get("host", request.url.hostname),
-                "X-Forwarded-Proto": request.headers.get("x-forwarded-proto", request.url.scheme),
-            }
-            response = await client.get(url, headers=headers)
-            google_url = response.headers.get("location")
-            if google_url:
-                return RedirectResponse(url=google_url, status_code=302)
-        except Exception as e:
-            logger.error(f"Auth Proxy Error: {e}")
-        
-    frontend_login = f"{origin}/login" if origin else f"{settings.FRONTEND_URL or 'http://localhost:5173'}/login"
-    return RedirectResponse(
-        url=f"{frontend_login}?error=auth_proxy_down", 
-        status_code=302
-    )
-
-@app.get("/auth/google/callback", tags=["Auth Proxy"])
-async def auth_google_callback_proxy(request: Request):
-    """Proxy the callback from Google back to the internal Node.js auth server"""
-    async with httpx.AsyncClient(follow_redirects=False) as client:
-        try:
-            url = f"http://localhost:8081/auth/google/callback?{request.url.query}"
-            headers = {
-                "Cookie": request.headers.get("cookie", ""),
-                "X-Forwarded-Host": request.headers.get("host", request.url.hostname),
-                "X-Forwarded-Proto": request.headers.get("x-forwarded-proto", request.url.scheme),
-            }
-            response = await client.get(url, headers=headers)
-            redirect_target = response.headers.get("location")
-            if redirect_target:
-                # We need to relay the cookie that Node tries to set back to the client
-                final_response = RedirectResponse(url=redirect_target, status_code=302)
-                if "set-cookie" in response.headers:
-                    final_response.headers["set-cookie"] = response.headers["set-cookie"]
-                return final_response
-            
-            # If no redirect is given, return the text
-            return JSONResponse(status_code=response.status_code, content={"message": "Callback processed", "data": response.text})
-        except Exception as e:
-            logger.error(f"Auth Proxy Error: {e}")
-
-    frontend_login = f"{settings.FRONTEND_URL or 'http://localhost:5173'}/login"
-    return RedirectResponse(
-        url=f"{frontend_login}?error=auth_proxy_down_callback", 
-        status_code=302
-    )
-
 @app.get("/", tags=["Root"])
 async def root():
     return {
@@ -248,6 +206,23 @@ async def root():
         "version": "1.0.0",
         "docs": "/docs" if settings.ENVIRONMENT != "production" else "Hidden"
     }
+
+from app.services.ai_assistant_service import ai_assistant_service
+
+@app.get("/debug-gemini", tags=["Debug"])
+async def debug_gemini():
+    """Manual Gemini connectivity test (Step 3)"""
+    try:
+        # Directly test the service's model
+        model = ai_assistant_service._get_model()
+        if not model:
+            return {"success": False, "error": "Model initialization failed (Check API Key)"}
+        
+        response = model.generate_content("Say hello")
+        return {"success": True, "text": response.text}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 
 if __name__ == "__main__":
     import uvicorn

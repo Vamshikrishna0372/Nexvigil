@@ -1,0 +1,217 @@
+﻿python : Traceback (most 
+recent call last):
+At line:1 char:117
++ ... .Trim() }); python 
+-c "import 
+google.generativeai as 
+genai; genai.con ...
++                 ~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo       
+       : NotSpecified:   
+  (Traceback (most rec   
+ ent call last)::Stri    
+ng) [], RemoteExcept    
+ion
+    + FullyQualifiedErro 
+   rId : NativeCommandE  
+  rror
+ 
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\grpc_helpers.py", 
+line 55, in 
+error_remapped_callable
+    return 
+callable_(*args, 
+**kwargs)
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\grpc\_chann
+el.py", line 1159, in 
+__call__
+    return _end_unary_res
+ponse_blocking(state, 
+call, False, None)
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\grpc\_chann
+el.py", line 990, in _end
+_unary_response_blocking
+    raise 
+_InactiveRpcError(state) 
+ # pytype: 
+disable=not-instantiable
+    ^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^
+grpc._channel._InactiveRp
+cError: 
+<_InactiveRpcError of 
+RPC that terminated with:
+	status = 
+StatusCode.NOT_FOUND
+	details = 
+"models/gemini-pro is 
+not found for API 
+version v1beta, or is 
+not supported for 
+generateContent. Call 
+ListModels to see the 
+list of available models 
+and their supported 
+methods."
+	debug_error_string = 
+"UNKNOWN:Error received 
+from peer 
+ipv4:216.239.36.223:443 
+{grpc_status:5, grpc_mess
+age:"models/gemini-pro 
+is not found for API 
+version v1beta, or is 
+not supported for 
+generateContent. Call 
+ListModels to see the 
+list of available models 
+and their supported 
+methods."}"
+>
+
+The above exception was 
+the direct cause of the 
+following exception:
+
+Traceback (most recent 
+call last):
+  File "<string>", line 
+1, in <module>
+    import 
+google.generativeai as 
+genai; genai.configure(ap
+i_key='AIzaSyDa4pc5_R6l9O
+e4lCMXeZMiJGLlxcJ020w'); 
+model = genai.GenerativeM
+odel('gemini-pro'); 
+response = model.generate
+_content('Say hello'); 
+print(f'TEXT: 
+{response.text}')
+                         
+                         
+                         
+                         
+                         
+                         
+               ~~~~~~~~~~
+~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\gene
+rativeai\generative_model
+s.py", line 331, in 
+generate_content
+    response = self._clie
+nt.generate_content(
+        request,
+        
+**request_options,
+    )
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\ai\g
+enerativelanguage_v1beta\
+services\generative_servi
+ce\client.py", line 830, 
+in generate_content
+    response = rpc(
+        request,
+    ...<2 lines>...
+        
+metadata=metadata,
+    )
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\gapic_v1\method.py",
+ line 128, in __call__
+    return 
+wrapped_func(*args, 
+**kwargs)
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\retry\retry_unary.py
+", line 294, in 
+retry_wrapped_func
+    return retry_target(
+        target,
+    ...<3 lines>...
+        
+on_error=on_error,
+    )
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\retry\retry_unary.py
+", line 156, in 
+retry_target
+    next_sleep = 
+_retry_error_helper(
+        exc,
+    ...<6 lines>...
+        timeout,
+    )
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\retry\retry_base.py"
+, line 216, in 
+_retry_error_helper
+    raise final_exc from 
+source_exc
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\retry\retry_unary.py
+", line 147, in 
+retry_target
+    result = target()
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\timeout.py", line 
+130, in func_with_timeout
+    return func(*args, 
+**kwargs)
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\grpc_helpers.py", 
+line 57, in 
+error_remapped_callable
+    raise exceptions.from
+_grpc_error(exc) from exc
+google.api_core.exception
+s.NotFound: 404 
+models/gemini-pro is not 
+found for API version 
+v1beta, or is not 
+supported for 
+generateContent. Call 
+ListModels to see the 
+list of available models 
+and their supported 
+methods.

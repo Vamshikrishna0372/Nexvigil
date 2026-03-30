@@ -1,6 +1,7 @@
 from app.api.v1.endpoints import (
-    health, auth, test_routes, cameras, internal, alerts, notifications, system, analytics, models, organizations, media, ai_admin, anomalies, rules, users
+    health, auth, test_routes, cameras, internal, alerts, notifications, system, analytics, models, organizations, media, ai_admin, ai_chat, anomalies, rules, users
 )
+
 from fastapi import APIRouter
 
 api_router = APIRouter()
@@ -19,4 +20,6 @@ api_router.include_router(anomalies.router, prefix="/anomalies", tags=["Anomalie
 api_router.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
 api_router.include_router(models.router, prefix="/models", tags=["Models"])
 api_router.include_router(ai_admin.router, prefix="/ai", tags=["AI Admin"])
+api_router.include_router(ai_chat.router, prefix="/ai", tags=["AI Chat"])
+
 api_router.include_router(internal.router, prefix="/internal", tags=["Internal"])

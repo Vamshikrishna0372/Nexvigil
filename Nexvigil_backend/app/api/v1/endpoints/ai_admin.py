@@ -82,3 +82,15 @@ async def send_test_email(
         message=result["message"],
         data=result
     )
+
+from app.services.ai_assistant_service import ai_assistant_service
+
+@router.get("/test-gemini")
+async def test_gemini_direct():
+    """Manual Gemini connectivity test (Step 3)"""
+    try:
+        result = await ai_assistant_service.ask_ai("Say hello", [])
+        return {"success": True, "result": result.get("answer")}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+

@@ -11,6 +11,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 from app.services.notification_service import notification_service
+from app.services.gemini_service import analyze_detection
+
+
 
 class AlertService:
     collection_name = "alerts"
@@ -46,40 +49,34 @@ class AlertService:
         # Lowered to 0.3 to allow rule-specific thresholds (e.g. Armed Threat) to pass through
         DEFAULT_THRESHOLD = 0.3
         if alert_in.confidence < DEFAULT_THRESHOLD:
-             return None
-
-        # Use severity from AI rule engine if provided.
-        # AI agent has already validated rule conditions and determined severity.
-        # Only fallback to confidence-based if severity not set.
-        if hasattr(alert_in, 'severity') and alert_in.severity:
-            severity = alert_in.severity
-        else:
-            # Fallback: derive from confidence
-            if alert_in.confidence > 0.9:
-                severity = "critical"
-            elif alert_in.confidence > 0.75:
-                severity = "high"
-            elif alert_in.confidence > 0.6:
-                severity = "medium"
-            else:
-                severity = "low"
-
+             return None        # Phase 2: Intelligent AI Detection Analysis
+        camera_name = camera.get("camera_name", "Unknown Camera")
+        timestamp_str = datetime.now(timezone.utc).strftime("%Y-%M-%d %H:%M:%S UTC")
+        
         alert_dict = alert_in.model_dump()
         alert_dict["owner_id"] = str(camera["owner_id"])
-        alert_dict["organization_id"] = str(camera.get("organization_id")) if camera.get("organization_id") else None # Propagate tenant ID as string
+        alert_dict["organization_id"] = str(camera.get("organization_id")) if camera.get("organization_id") else None
+
+        # --- Phase 2: Intelligent AI Detection Analysis ---
+        analysis = await analyze_detection(alert_in.object_detected, camera_name, timestamp_str)
+        severity = analysis.get("severity", "MEDIUM").lower()
+        description = analysis.get("reason", f"Activity detected: {alert_in.object_detected} present at {camera_name}.")
+        
         alert_dict["severity"] = severity
+        alert_dict["description"] = description
+
         alert_dict["is_acknowledged"] = False
         alert_dict["acknowledged_by"] = None
         alert_dict["acknowledged_at"] = None
         alert_dict["created_at"] = datetime.now(timezone.utc)
         alert_dict["updated_at"] = datetime.now(timezone.utc)
         
-        result = await db.client[db.db.name][self.collection_name].insert_one(alert_dict)
+        result = await db.db[self.collection_name].insert_one(alert_dict)
         
         alert_dict["id"] = str(result.inserted_id)
         alert_dict["_id"] = str(result.inserted_id)
         
-        # Safe copy for background tasks (where JSON serialization might happen)
+        # Safe copy for background tasks
         alert_bg = alert_dict.copy()
         if isinstance(alert_bg.get("created_at"), datetime):
              alert_bg["created_at"] = alert_bg["created_at"].isoformat()
@@ -93,7 +90,7 @@ class AlertService:
         from app.services.email_service import email_service
         asyncio.create_task(email_service.send_alert_email(alert_bg))
         
-        # Log (using 'system' or 'AI' as user_id placeholder)
+        # Log 
         await self._log_audit("alert_created_ai", "system_ai", str(result.inserted_id), True, {"severity": severity})
         
         # Trigger Anomaly Analysis

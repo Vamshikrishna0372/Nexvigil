@@ -19,6 +19,8 @@ import HeaderLeft from "@/components/header/HeaderLeft";
 import HeaderCenter from "@/components/header/HeaderCenter";
 import HeaderRight from "@/components/header/HeaderRight";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import AIChatAssistant from "@/components/AIChatAssistant";
+
 
 interface NavGroup {
   label: string;
@@ -401,12 +403,15 @@ const DashboardLayout = () => {
             </motion.div>
           </div>
 
-          {/* Subtle background decoration */}
           <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] -z-10 rounded-full" />
           <div className="fixed bottom-0 left-[260px] w-[300px] h-[300px] bg-accent/5 blur-[100px] -z-10 rounded-full" />
         </main>
+        
+        {/* Global AI Intelligence Assistant */}
+        <AIChatAssistant />
       </div>
     </div>
+
   );
 };
 

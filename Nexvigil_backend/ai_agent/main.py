@@ -76,66 +76,86 @@ def is_time_allowed(restriction):
 def safe_request(method, endpoint, **kwargs):
     url = f"{BACKEND_URL}{endpoint}"
     kwargs.setdefault("headers", HEADERS); kwargs.setdefault("timeout", 10)
-    try: return requests.post(url, **kwargs) if method.lower() == "post" else requests.get(url, **kwargs)
-    except: return None
+    try: 
+        resp = requests.post(url, **kwargs) if method.lower() == "post" else requests.get(url, **kwargs)
+        if resp:
+            print(f"DEBUG: API {method.upper()} {endpoint} -> {resp.status_code}")
+        return resp
+    except Exception as e: 
+        print(f"DEBUG: API Request Failed: {e}")
+        return None
 
 def _media_worker():
     while True:
         try:
             p = media_queue.get()
             t, cid, ts, f = p.get("task"), p.get("cid"), p.get("ts"), p.get("frame")
-            if f is not None:
-                if t == "snapshot":
-                    cv2.imwrite(os.path.join(MEDIA_DIR, "screenshots", f"{cid}_{ts}_interval.jpg"), f)
-                elif t == "alert":
-                    ss_n = f"{cid}_{ts}_alert.jpg"; p_out = os.path.join(MEDIA_DIR, "screenshots", ss_n)
-                    cv2.imwrite(p_out, f)
-                    a_data = p.get("alert_data"); a_data["screenshot_path"] = f"screenshots/{ss_n}"
+            print(f"DEBUG: CAPTURE FUNCTION CALLED for {t}") # Step 2
+            
+            if f is None: # Step 4
+                print(f"DEBUG: Frame is NONE for {t} ❌")
+                media_queue.task_done()
+                continue
+
+            if t == "snapshot":
+                path = os.path.join(MEDIA_DIR, "screenshots", f"{cid}_{ts}_interval.jpg")
+                saved = cv2.imwrite(path, f) # Step 3
+                if saved:
+                    print(f"DEBUG: Screenshot saved: {path} ✅")
+                else:
+                    print(f"DEBUG: FAILED to save screenshot: {path} ❌")
+            elif t == "alert":
+                ss_n = f"{cid}_{ts}_alert.jpg"
+                p_out = os.path.join(MEDIA_DIR, "screenshots", ss_n)
+                saved = cv2.imwrite(p_out, f) # Step 3
+                if saved:
+                    print(f"DEBUG: Alert Screenshot saved: {p_out} ✅")
+                    a_data = p.get("alert_data")
+                    a_data["screenshot_path"] = f"screenshots/{ss_n}"
                     safe_request("post", "/internal/alerts", json=a_data)
+                else:
+                    print(f"DEBUG: FAILED to save alert screenshot: {p_out} ❌")
+            
             media_queue.task_done()
-        except: time.sleep(1)
+        except Exception as e: 
+            print(f"DEBUG: Media Worker Error: {e}")
+            time.sleep(1)
 
 def video_recorder(v_queue, stop_evt):
     """Requirement: Guaranteed browser-playable video alerts."""
     while not stop_evt.is_set():
         try:
-            path, buffer = v_queue.get(timeout=2)
+            p = v_queue.get(timeout=2)
+            path, buffer = p[0], p[1]
+            
             if not buffer or len(buffer) < 5: 
-                logger.warning("⚠️ Recording skipped: Buffer depleted.")
+                print("DEBUG: Recording skipped: Buffer depleted.")
                 continue
 
-            logger.info(f"🎞️ Recording Video: {os.path.basename(path)}")
-            # Try avc1 (H.264 for browsers) -> fallback to mp4v -> XVID
-            fourcc = cv2.VideoWriter_fourcc(*'avc1')
-            out = cv2.VideoWriter(path, fourcc, VIDEO_FPS, (TARGET_W, TARGET_H))
+            print(f"DEBUG: STARTING VIDEO RECORD: {path}") # Step 2
+            # Use MP4V codec for high stability (Step 5 & 8)
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v') # Step 5
             
-            if not out.isOpened():
-                logger.warning("⚠️ avc1 failed. Falling back to libx264.")
-                fourcc = cv2.VideoWriter_fourcc(*'x264')
-                out = cv2.VideoWriter(path, fourcc, VIDEO_FPS, (TARGET_W, TARGET_H))
-                
-                if not out.isOpened():
-                    logger.warning("⚠️ x264 failed. Falling back to mp4v.")
-                    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-                    out = cv2.VideoWriter(path, fourcc, VIDEO_FPS, (TARGET_W, TARGET_H))
+            # Initialise VideoWriter ONCE (Step 11)
+            out = cv2.VideoWriter(path, fourcc, VIDEO_FPS, (TARGET_W, TARGET_H))
             
             if out.isOpened():
                 cnt = 0
-                for f in buffer:
+                for f in buffer: # Step 6
                     if f is not None:
                         if f.shape[1] != TARGET_W or f.shape[0] != TARGET_H:
                             f = cv2.resize(f, (TARGET_W, TARGET_H))
-                        out.write(f)
+                        out.write(f) # Step 6
                         cnt += 1
-                out.release()
-                logger.info(f"✅ Video Saved: {os.path.basename(path)} ({cnt} frames)")
+                out.release() # Step 7: Release writer
+                print(f"DEBUG: Video Saved: {path} ({cnt} frames) ✅")
             else:
-                logger.error(f"❌ VideoWriter failed to open for {path}")
+                print(f"DEBUG: VideoWriter FAILED to open for {path} ❌")
             
             v_queue.task_done()
         except queue.Empty: pass
         except Exception as e:
-            logger.error(f"❌ Video Record Error: {e}")
+            print(f"DEBUG: Video Record Error: {e}")
 
 # ─── YOLO Manager (CENTRALIZED) ────────────────────────────────────────────────
 def yolo_manager():
@@ -158,84 +178,57 @@ def yolo_manager():
                 if frame is None or fid == last_processed.get(cid): continue
                 
                 # Inference
-                # Increased native confidence from 0.15 to 0.50 to strictly eliminate dark-frame hallucinations
                 with yolo_lock: results = model(frame, verbose=False, imgsz=TARGET_W, conf=0.50)
                 res = results[0]; last_processed[cid] = fid
                 
                 visual_detections = []
-                detected_labels = [] # Debug tracking
+                detected_labels = [] 
                 
                 # 2. Process Detected Objects
-                for b in res.boxes:
-                    coords = b.xyxy[0].tolist(); conf = float(b.conf[0]); label = model.names[int(b.cls[0])].lower()
-                    
-                    # Hard floor for confidence regardless of user rules to prevent noise
-                    if conf < 0.50:
-                        continue
+                if len(res.boxes) > 0:
+                    for b in res.boxes:
+                        coords = b.xyxy[0].tolist(); conf = float(b.conf[0]); label = model.names[int(b.cls[0])].lower()
                         
-                    entry = {"box": coords, "label": label, "conf": conf, "severity": "low"}
-                    
-                    if conf >= 0.50:
-                        norm = CLASS_MAP.get(label, label); triggered = None
-                        for rule in active_rules:
-                            if not rule.get("is_active", True) or not is_time_allowed(rule.get("time_restriction")): continue
-                            targets = [t.lower() for t in rule.get("target_classes", [])]
-                            if (norm in targets or label in targets) and conf >= float(rule.get("min_confidence", 0.2)):
-                                triggered = rule; 
-                                # Requirement 4: ALERT PRIORITY (CRITICAL LABEL)
-                                entry["severity"] = "critical" if label == "person" else "warning"
-                                break
-                        
-                        # Requirement 2 & 3: Detection-Based Trigger (Strict 10s Interval, NO periodic capture)
-                        if triggered:
+                        if conf > 0.5: # STEP 3: Confidence Guard
+                            print(f"DEBUG: 🔥 VALID DETECTION: {label} ({conf:.2f})")
+                            
+                            # STEP 4: Rule Engine / Bypass
+                            triggered = {"id": "SYS-AUTO", "rule_name": f"Automatic {label.capitalize()} Detection", "persistence_seconds": 0}
+                            for rule in active_rules:
+                                targets = [t.lower() for t in rule.get("target_classes", [])]
+                                if label in targets and conf >= float(rule.get("min_confidence", 0.2)):
+                                    triggered = rule
+                                    break
+                                    
+                            entry = {"box": coords, "label": label, "conf": conf, "severity": "critical" if label == "person" else "warning"}
+                            
                             rid = str(triggered.get("id") or triggered.get("_id", "")); key = f"{cid}_{label}_{rid}"
                             if key not in persistence: persistence[key] = now
                             
-                            # Standard interval of 10s forced by requirement 5
-                            interval = 10.0 # Strict 10s capture interval when active
-                            if (now - persistence[key] >= float(triggered.get("persistence_seconds", 1))) and \
-                               (now - cooldown.get(key, 0) >= interval):
-                                
-                                alert_name = label.capitalize()
-                                
-                                # Requirement 8: FAIL-SAFE CHECK
-                                if "periodic" in alert_name.lower() or alert_name == "Periodic Capture":
-                                    raise ValueError("CRITICAL ERROR: 'Periodic Capture' label illegally generated.")
-                                
-                                logger.info(f"🚨 ALERT: {alert_name} Detected on {info['cfg']['camera_name']}")
+                            interval = 10.0 # 10s Alert Cooldown
+                            is_cooldown_over = (now - cooldown.get(key, 0) >= interval)
+                            
+                            if is_cooldown_over:
+                                print(f"DEBUG: 🚨 ALERT EMITTED: {label} on Cam {cid[:6]}")
                                 ts = datetime.now().strftime("%Y%m%d_%H%M%S"); vid_n = f"{cid}_{ts}_{label}.mp4"
-                                
-                                # Alert Data - Purely detection driven
                                 a_data = {
-                                    "camera_id": cid,
-                                    "object_detected": label,
-                                    "confidence": round(conf, 2),
-                                    "severity": entry["severity"],
-                                    "rule_name": f"{alert_name} Detected", # Overriding generic rule name with specific detection
-                                    "detection_type": label,
-                                    "triggered_rule_id": rid,
-                                    "video_path": f"videos/{vid_n}",
-                                    "cam_name": info['cfg']['camera_name']
+                                    "camera_id": cid, "object_detected": label, "confidence": round(conf, 2),
+                                    "severity": entry["severity"], "rule_name": triggered.get("rule_name", f"{label.capitalize()} Detected"),
+                                    "detection_type": label, "triggered_rule_id": rid,
+                                    "video_path": f"videos/{vid_n}", "cam_name": info['cfg'].get('camera_name', 'Unknown')
                                 }
                                 
-                                # Queue media task (Atomic: captures ONE frame and triggers Alert)
+                                # Send to Workers
                                 media_queue.put({
-                                    "task": "alert", 
-                                    "cid": cid, 
-                                    "ts": ts, 
-                                    "frame": frame.copy(),
-                                    "alert_data": a_data
+                                    "task": "alert", "cid": cid, "ts": ts, "frame": frame.copy(), "alert_data": a_data
                                 })
-                                
-                                # Queue video record
                                 info["v_queue"].put((os.path.join(MEDIA_DIR, "videos", vid_n), list(info["buffer"])))
                                 cooldown[key] = now
                                 detected_labels.append(label)
-                        else:
-                            # Reset persistence if rule no longer met for this specific class
-                            rid_key = f"{cid}_{label}"
-                            if rid_key in persistence: del persistence[rid_key]
-                    visual_detections.append(entry)
+                            
+                            visual_detections.append(entry)
+                else:
+                    persistence.clear()
                 
                 # Diagnostic Tracking (Requirement 8)
                 if len(detected_labels) > 0:

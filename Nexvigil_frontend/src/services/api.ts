@@ -5,19 +5,31 @@
  */
 
 const getApiBase = () => {
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+  const hostname = window.location.hostname;
+  const isVercel = hostname.includes("vercel.app");
+  const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
 
-  if (!envUrl) {
-    if (import.meta.env.DEV) {
-      console.warn("VITE_API_BASE_URL is missing. Please set it in .env");
-    } else {
-      console.error("CRITICAL: VITE_API_BASE_URL is missing in production!");
-    }
-    // Final fallback that allows relative resolution if backend is proxied
-    return "/api/v1";
+  let base = envUrl || "";
+
+  // SAFETY: Prevent Production (Vercel) from calling Localhost
+  if (isVercel && (base.includes("localhost") || base.includes("127.0.0.1") || !base)) {
+    // Force production backend if we are on Vercel but env is wrong
+    // Assuming the user wants their ngrok URL or a specific production domain
+    base = "https://nonprohibitive-unpraying-casimira.ngrok-free.dev";
+    console.warn("PRODUCTION URL MISMATCH: Forcing production backend gateway.");
   }
 
-  let base = envUrl.replace(/\/$/, "");
+  if (!base) {
+    if (import.meta.env.DEV) {
+      base = "http://localhost:8000";
+    } else {
+      console.error("CRITICAL: VITE_API_URL is missing in production!");
+      return "/api/v1";
+    }
+  }
+
+  base = base.replace(/\/$/, "");
   if (!base.endsWith("/api/v1")) {
     base = `${base}/api/v1`;
   }
@@ -25,7 +37,7 @@ const getApiBase = () => {
 };
 
 export const API_BASE = getApiBase();
-export const AUTH_BASE = "http://localhost:8081"; 
+export const AUTH_BASE = `${API_BASE}/auth`;
 
 // Generic fetch wrapper with auth
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<{ data: T | null; error: string | null }> {
@@ -93,7 +105,7 @@ export const api = {
 
   // Node.js Auth (Google OAuth)
   nodeAuth: {
-    getUser: () => fetch(`${AUTH_BASE}/auth/user`, { 
+    getUser: () => fetch(`${AUTH_BASE}/user`, { 
       credentials: "include",
       headers: { "ngrok-skip-browser-warning": "true" }
     }).then(res => res.json()),
@@ -149,7 +161,9 @@ export const api = {
     detectionOverview: (params?: { days?: number; camera_id?: string; severity?: string }) =>
       request(`/analytics/alerts?${new URLSearchParams(params as any).toString()}`),
     anomalies: () => request("/anomalies/summary"),
+    aiInsights: () => request<{ insights: string; automation: { trigger: boolean; reason: string }; alerts_analyzed: number }>("/analytics/ai-insights"),
   },
+
 
   // System (Admin only)
   system: {
@@ -224,5 +238,14 @@ export const api = {
   // Audit
   audit: {
     logs: (limit: number = 100) => request(`/system/audit-logs?limit=${limit}`),
+  },
+
+  // AI Assistant
+  ai: {
+    chat: (query: string) => request<{ answer: string; intent: string; data?: any }>("/ai/chat", { 
+      method: "POST", 
+      body: JSON.stringify({ query }) 
+    }),
   }
 };
+

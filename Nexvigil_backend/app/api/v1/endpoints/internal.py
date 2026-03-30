@@ -85,6 +85,8 @@ async def create_alert_internal(
     Internal endpoint for AI Agent to post alerts.
     """
     alert = await alert_service.create_alert_from_ai(alert_in)
+    if not alert:
+        return {"status": "ignored", "message": "Alert below thresholds or filtered"}
     return {"status": "created", "alert_id": alert.id}
 
 @router.post("/ai-metrics", status_code=status.HTTP_201_CREATED)

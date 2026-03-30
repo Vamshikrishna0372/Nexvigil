@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 
+import { API_BASE } from "@/services/api";
+
 const Register = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
   const [showPw, setShowPw] = useState(false);
@@ -102,7 +104,7 @@ const Register = () => {
             </div>
 
             <a
-              href="http://localhost:8081/auth/google"
+              href={`${API_BASE}/auth/google/login?origin=${encodeURIComponent(window.location.origin)}`}
               className="w-full h-11 rounded-xl bg-white text-[#1f1f1f] hover:bg-gray-50 flex items-center justify-center transition-all duration-300 text-sm font-semibold shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] group overflow-hidden"
             >
               <div className="mr-3 bg-white p-1 rounded-sm">

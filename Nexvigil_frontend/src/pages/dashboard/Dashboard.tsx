@@ -239,6 +239,11 @@ const Dashboard = () => {
                         <span className="font-bold text-sm text-foreground block truncate group-hover/item:text-primary transition-colors">
                           {a.object_detected}
                         </span>
+                        {a.description && (
+                          <div className="text-[10px] text-muted-foreground line-clamp-1 italic max-w-[150px] sm:max-w-[280px]">
+                            {a.description}
+                          </div>
+                        )}
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-[10px] font-medium text-muted-foreground/70 uppercase tracking-tight">
                             {new Date(a.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
@@ -248,6 +253,7 @@ const Dashboard = () => {
                             Node {a.camera_id?.slice(-4).toUpperCase() || "SYS"}
                           </span>
                         </div>
+
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">

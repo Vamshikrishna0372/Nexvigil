@@ -1,0 +1,349 @@
+﻿python : Traceback (most 
+recent call last):
+At line:1 char:117
++ ... .Trim() }); python 
+-c "import 
+google.generativeai as 
+genai; genai.con ...
++                 ~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo       
+       : NotSpecified:   
+  (Traceback (most rec   
+ ent call last)::Stri    
+ng) [], RemoteExcept    
+ion
+    + FullyQualifiedErro 
+   rId : NativeCommandE  
+  rror
+ 
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\grpc_helpers.py", 
+line 55, in 
+error_remapped_callable
+    return 
+callable_(*args, 
+**kwargs)
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\grpc\_chann
+el.py", line 1159, in 
+__call__
+    return _end_unary_res
+ponse_blocking(state, 
+call, False, None)
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\grpc\_chann
+el.py", line 990, in _end
+_unary_response_blocking
+    raise 
+_InactiveRpcError(state) 
+ # pytype: 
+disable=not-instantiable
+    ^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^
+grpc._channel._InactiveRp
+cError: 
+<_InactiveRpcError of 
+RPC that terminated with:
+	status = StatusCode.RESO
+URCE_EXHAUSTED
+	details = "You exceeded 
+your current quota, 
+please check your plan 
+and billing details. For 
+more information on this 
+error, head to: https://a
+i.google.dev/gemini-api/d
+ocs/rate-limits. To 
+monitor your current 
+usage, head to: https://a
+i.dev/rate-limit. 
+* Quota exceeded for 
+metric: generativelanguag
+e.googleapis.com/generate
+_content_free_tier_input_
+token_count, limit: 0, 
+model: gemini-2.0-flash
+* Quota exceeded for 
+metric: generativelanguag
+e.googleapis.com/generate
+_content_free_tier_reques
+ts, limit: 0, model: 
+gemini-2.0-flash
+* Quota exceeded for 
+metric: generativelanguag
+e.googleapis.com/generate
+_content_free_tier_reques
+ts, limit: 0, model: 
+gemini-2.0-flash
+Please retry in 
+36.126013881s."
+	debug_error_string = 
+"UNKNOWN:Error received 
+from peer 
+ipv4:216.239.36.223:443 
+{grpc_message:"You 
+exceeded your current 
+quota, please check your 
+plan and billing 
+details. For more 
+information on this 
+error, head to: https://a
+i.google.dev/gemini-api/d
+ocs/rate-limits. To 
+monitor your current 
+usage, head to: https://a
+i.dev/rate-limit. \n* 
+Quota exceeded for 
+metric: generativelanguag
+e.googleapis.com/generate
+_content_free_tier_input_
+token_count, limit: 0, 
+model: 
+gemini-2.0-flash\n* 
+Quota exceeded for 
+metric: generativelanguag
+e.googleapis.com/generate
+_content_free_tier_reques
+ts, limit: 0, model: 
+gemini-2.0-flash\n* 
+Quota exceeded for 
+metric: generativelanguag
+e.googleapis.com/generate
+_content_free_tier_reques
+ts, limit: 0, model: 
+gemini-2.0-flash\nPlease 
+retry in 
+36.126013881s.", 
+grpc_status:8}"
+>
+
+The above exception was 
+the direct cause of the 
+following exception:
+
+Traceback (most recent 
+call last):
+  File "<string>", line 
+1, in <module>
+    import 
+google.generativeai as 
+genai; genai.configure(ap
+i_key='AIzaSyDa4pc5_R6l9O
+e4lCMXeZMiJGLlxcJ020w'); 
+model = genai.GenerativeM
+odel('gemini-2.0-flash');
+ response = model.generat
+e_content('Hi'); 
+print(f'TEXT: 
+{response.text}')
+                         
+                         
+                         
+                         
+                         
+                         
+                     ~~~~
+~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\gene
+rativeai\generative_model
+s.py", line 331, in 
+generate_content
+    response = self._clie
+nt.generate_content(
+        request,
+        
+**request_options,
+    )
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\ai\g
+enerativelanguage_v1beta\
+services\generative_servi
+ce\client.py", line 830, 
+in generate_content
+    response = rpc(
+        request,
+    ...<2 lines>...
+        
+metadata=metadata,
+    )
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\gapic_v1\method.py",
+ line 128, in __call__
+    return 
+wrapped_func(*args, 
+**kwargs)
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\retry\retry_unary.py
+", line 294, in 
+retry_wrapped_func
+    return retry_target(
+        target,
+    ...<3 lines>...
+        
+on_error=on_error,
+    )
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\retry\retry_unary.py
+", line 156, in 
+retry_target
+    next_sleep = 
+_retry_error_helper(
+        exc,
+    ...<6 lines>...
+        timeout,
+    )
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\retry\retry_base.py"
+, line 216, in 
+_retry_error_helper
+    raise final_exc from 
+source_exc
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\retry\retry_unary.py
+", line 147, in 
+retry_target
+    result = target()
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\timeout.py", line 
+130, in func_with_timeout
+    return func(*args, 
+**kwargs)
+  File "C:\Users\Vamshikr
+ishna\AppData\Local\Progr
+ams\Python\Python313\Lib\
+site-packages\google\api_
+core\grpc_helpers.py", 
+line 57, in 
+error_remapped_callable
+    raise exceptions.from
+_grpc_error(exc) from exc
+google.api_core.exception
+s.ResourceExhausted: 429 
+You exceeded your 
+current quota, please 
+check your plan and 
+billing details. For 
+more information on this 
+error, head to: https://a
+i.google.dev/gemini-api/d
+ocs/rate-limits. To 
+monitor your current 
+usage, head to: https://a
+i.dev/rate-limit. 
+* Quota exceeded for 
+metric: generativelanguag
+e.googleapis.com/generate
+_content_free_tier_input_
+token_count, limit: 0, 
+model: gemini-2.0-flash
+* Quota exceeded for 
+metric: generativelanguag
+e.googleapis.com/generate
+_content_free_tier_reques
+ts, limit: 0, model: 
+gemini-2.0-flash
+* Quota exceeded for 
+metric: generativelanguag
+e.googleapis.com/generate
+_content_free_tier_reques
+ts, limit: 0, model: 
+gemini-2.0-flash
+Please retry in 
+36.126013881s. [links {
+  description: "Learn 
+more about Gemini API 
+quotas"
+  url: "https://ai.google
+.dev/gemini-api/docs/rate
+-limits"
+}
+, violations {
+  quota_metric: "generati
+velanguage.googleapis.com
+/generate_content_free_ti
+er_input_token_count"
+  quota_id: "GenerateCont
+entInputTokensPerModelPer
+Minute-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: 
+"gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generati
+velanguage.googleapis.com
+/generate_content_free_ti
+er_requests"
+  quota_id: "GenerateRequ
+estsPerMinutePerProjectPe
+rModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: 
+"gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+violations {
+  quota_metric: "generati
+velanguage.googleapis.com
+/generate_content_free_ti
+er_requests"
+  quota_id: "GenerateRequ
+estsPerDayPerProjectPerMo
+del-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: 
+"gemini-2.0-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+}
+, retry_delay {
+  seconds: 36
+}
+]
