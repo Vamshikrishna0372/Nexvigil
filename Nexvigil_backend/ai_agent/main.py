@@ -105,14 +105,21 @@ def _media_worker():
                 else:
                     print(f"DEBUG: FAILED to save screenshot: {path} ❌")
             elif t == "alert":
+                # 1. Save Alert Screenshot
                 ss_n = f"{cid}_{ts}_alert.jpg"
                 p_out = os.path.join(MEDIA_DIR, "screenshots", ss_n)
-                saved = cv2.imwrite(p_out, f) # Step 3
+                saved = cv2.imwrite(p_out, f) 
+                
                 if saved:
                     print(f"DEBUG: Alert Screenshot saved: {p_out} ✅")
                     a_data = p.get("alert_data")
                     a_data["screenshot_path"] = f"screenshots/{ss_n}"
+                    
+                    # 2. Wait for Video and send Alert record
+                    # In this stable version, we'll keep the alert record creation simple 
+                    # but we MUST ensure the path was set correctly in yolo_manager.
                     safe_request("post", "/internal/alerts", json=a_data)
+                    print(f"DEBUG: Alert Record Emitted to Backend for cam {cid[:6]}")
                 else:
                     print(f"DEBUG: FAILED to save alert screenshot: {p_out} ❌")
             
@@ -132,12 +139,19 @@ def video_recorder(v_queue, stop_evt):
                 print("DEBUG: Recording skipped: Buffer depleted.")
                 continue
 
-            print(f"DEBUG: STARTING VIDEO RECORD: {path}") # Step 2
-            # Use MP4V codec for high stability (Step 5 & 8)
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v') # Step 5
+            print(f"DEBUG: STARTING VIDEO RECORD: {path}") 
+            # Switching to avc1 (H.264) for maximum browser compatibility (Step 5 & 8)
+            # Most modern browsers require H.264 to play MP4 directly.
+            fourcc = cv2.VideoWriter_fourcc(*'avc1') 
             
-            # Initialise VideoWriter ONCE (Step 11)
+            # Initialise VideoWriter
             out = cv2.VideoWriter(path, fourcc, VIDEO_FPS, (TARGET_W, TARGET_H))
+            
+            # Fallback if avc1 is not available on this OpenCV build
+            if not out.isOpened():
+                print("DEBUG: avc1 codec failed, falling back to mp4v...")
+                fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+                out = cv2.VideoWriter(path, fourcc, VIDEO_FPS, (TARGET_W, TARGET_H))
             
             if out.isOpened():
                 cnt = 0
@@ -252,19 +266,34 @@ def camera_worker(cam_cfg: dict, stop_evt: threading.Event):
 
     def capture():
         cnt = 0
+        retry_count = 0
         while not stop_evt.is_set():
-            c = cv2.VideoCapture(int(src) if src.isdigit() else src, CV_BACKEND_LOCAL)
+            # Use specific backend for local cams (0, 1, 2), but default (FFMPEG) for URLs
+            if src.isdigit():
+                c = cv2.VideoCapture(int(src), CV_BACKEND_LOCAL)
+            else:
+                # [NETWORK STABILITY] Use FFMPEG for URLs explicitly
+                logger.info(f"🔗 [{name}] Attempting connection to: {src}...")
+                c = cv2.VideoCapture(src, cv2.CAP_FFMPEG)
+                
             if c.isOpened():
-                logger.info(f"📹 [{name}] Connected")
+                logger.info(f"📹 [{name}] Connected SUCCESSFULLY")
+                retry_count = 0
                 while not stop_evt.is_set():
                     r, f = c.read()
-                    if not r or f is None: break
+                    if not r or f is None: 
+                        logger.warning(f"⚠️ [{name}] Frame read failed (Signal droppped)")
+                        break
                     f = cv2.resize(f, (TARGET_W, TARGET_H)); cnt += 1
                     with f_lock: latest[0] = f; buffer.append(f.copy())
                     with registry_lock: global_registry[cid] = {"frame":f, "fid":cnt, "cfg":cam_cfg, "buffer":buffer, "v_queue":v_queue}
                     time.sleep(1/12.0)
                 c.release()
-            logger.warning(f"⚠️ [{name}] Signal lost. Retrying in 5s..."); time.sleep(5)
+            
+            retry_count += 1
+            if retry_count % 3 == 0:
+                logger.error(f"❌ [{name}] Connection FAILED after multiple attempts. CHECK: 1. Server IP 2. App active on mobile 3. Firewall settings.")
+            logger.warning(f"⚠️ [{name}] Signal lost. Retrying in 5s (Attempt {retry_count})..."); time.sleep(5)
 
     def write():
         while not stop_evt.is_set():

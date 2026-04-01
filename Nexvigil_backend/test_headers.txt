@@ -1,0 +1,1 @@
+{"date": "Wed, 01 Apr 2026 18:28:08 GMT", "server": "uvicorn", "www-authenticate": "Bearer", "content-length": "43", "content-type": "application/json", "access-control-allow-credentials": "true", "access-control-expose-headers": "Content-Range, Accept-Ranges, Content-Length", "access-control-allow-origin": "http://localhost:8080", "vary": "Origin", "connection": "close"}

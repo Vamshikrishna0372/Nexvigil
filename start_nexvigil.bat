@@ -14,6 +14,12 @@ REM ------------------------------
 echo Starting Nexvigil Backend...
 
 call :START_COMPONENT "Nexvigil Backend" "%PROJECT_ROOT%Nexvigil_backend" "python main.py"
+ 
+REM ------------------------------
+REM START AUTH SERVER (Node.js)
+REM ------------------------------
+echo Starting Nexvigil Auth Server...
+call :START_COMPONENT "Nexvigil Auth Server" "%PROJECT_ROOT%Nexvigil_backend" "node auth_server.js"
 
 
 REM Wait few seconds before starting AI

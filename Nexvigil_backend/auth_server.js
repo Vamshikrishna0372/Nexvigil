@@ -149,23 +149,37 @@ passport.deserializeUser(async (id, done) => {
 // 1. Initiate Google login
 app.get('/auth/google', (req, res, next) => {
   console.log('🚀 Route: /auth/google HIT');
-  const origin = req.query.origin || process.env.FRONTEND_URL || 'http://localhost:5173';
+  const origin = req.query.origin || process.env.FRONTEND_URL || 'http://localhost:8080';
   const stateStr = Buffer.from(JSON.stringify({ origin })).toString('base64');
   
-  const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+  // More robust local check
+  const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('0.0.0.0');
   
-  // DYNAMIC CALLBACK: Use PROD_CALLBACK_URL if available, otherwise construct from current host
-  let dynamicCallback = process.env.LOCAL_CALLBACK_URL || 'http://localhost:8081/auth/google/callback';
-  if (!isLocal) {
-    dynamicCallback = process.env.PROD_CALLBACK_URL || `https://${req.headers.host}/auth/google/callback`;
+  // GET CURRENT HOST (Support Proxy)
+  const forwardedHost = req.headers['x-forwarded-host'];
+  const forwardedProto = req.headers['x-forwarded-proto'] || 'http';
+  const currentHost = forwardedHost || req.headers.host;
+  const currentUrl = `${forwardedProto}://${currentHost}`;
+
+  // DYNAMIC CALLBACK: Use environment variables or intelligently detect
+  let dynamicCallback;
+  if (isLocal) {
+    // FORCE exactly what the user says is in their console for localhost
+    dynamicCallback = "http://localhost:8000/api/v1/auth/google/callback";
+  } else {
+    // Prod: Try PROD_CALLBACK_URL from .env (ngrok), fallback to detected host
+    dynamicCallback = process.env.PROD_CALLBACK_URL || `${currentUrl}/auth/google/callback`;
   }
 
-  console.log(`[OAuth] Init: origin=${origin}, callback=${dynamicCallback}`);
+  console.log(`[OAuth] Init: origin=${origin}, detected_host=${currentHost}, callback=${dynamicCallback}`);
+  console.log(`[OAuth] Passport Strategy info: clientID=${process.env.GOOGLE_CLIENT_ID ? 'EXISTS' : 'MISSING'}`);
 
   passport.authenticate('google', { 
     scope: ['profile', 'email'],
     state: stateStr,
-    callbackURL: dynamicCallback
+    callbackURL: dynamicCallback,
+    accessType: 'offline', // Added for potential extra robustness
+    prompt: 'select_account' // Ensure user can choose account if needed
   })(req, res, next);
 });
 
@@ -175,7 +189,15 @@ app.get('/auth/google/callback', (req, res, next) => {
   
   let targetDashboard = FRONTEND_DASHBOARD;
   let targetLogin = FRONTEND_LOGIN;
-  let dynamicCallback = process.env.LOCAL_CALLBACK_URL || 'http://localhost:8081/auth/google/callback';
+  
+  // Detect current environment for the Passport verification step
+  const forwardedHost = req.headers['x-forwarded-host'];
+  const forwardedProto = req.headers['x-forwarded-proto'] || 'http';
+  const currentHost = forwardedHost || req.headers.host;
+  const currentUrl = `${forwardedProto}://${currentHost}`;
+  
+  let dynamicCallback = process.env.LOCAL_CALLBACK_URL || `${currentUrl}/auth/google/callback`;
+
   if (req.query.state) {
     try {
       const stateObj = JSON.parse(Buffer.from(req.query.state, 'base64').toString('utf8'));
@@ -183,7 +205,7 @@ app.get('/auth/google/callback', (req, res, next) => {
         let base = stateObj.origin;
         if (base.endsWith('/')) base = base.slice(0, -1);
         
-        // Security checks: prevent Open Redirect by verifying origin is authorized
+        // Security checks
         const isAllowedOrigin = allowedOrigins.includes(base) || 
                                base.includes('localhost') || 
                                base.includes('127.0.0.1') || 
@@ -194,12 +216,10 @@ app.get('/auth/google/callback', (req, res, next) => {
           targetDashboard = `${base}/dashboard`;
           targetLogin = `${base}/login`;
           
-          const isLocal = base.includes('localhost') || base.includes('127.0.0.1');
+          const isLocal = base.includes('localhost') || base.includes('127.0.0.1') || base.includes('0.0.0.0');
           dynamicCallback = isLocal 
-            ? (process.env.LOCAL_CALLBACK_URL || 'http://localhost:8081/auth/google/callback')
-            : (process.env.PROD_CALLBACK_URL || `https://${req.headers.host}/auth/google/callback`);
-        } else {
-          console.error(`🚨 Security Alert: Blocked unauthorized OAuth redirect to ${base}`);
+            ? (process.env.LOCAL_CALLBACK_URL || `${currentUrl}/auth/google/callback`)
+            : (process.env.PROD_CALLBACK_URL || `${currentUrl}/auth/google/callback`);
         }
       }
     } catch (e) {
@@ -215,9 +235,10 @@ app.get('/auth/google/callback', (req, res, next) => {
       return res.redirect(`${targetLogin}?error=auth_failed`);
     }
     if (!user) {
-      console.error('❌ Passport Auth Failure (no user):', info);
+      console.error('❌ Passport Auth Failure (no user). Info:', info);
       return res.redirect(`${targetLogin}?error=no_user`);
     }
+      console.log('✅ Passport Auth successful. User:', user.email);
       req.logIn(user, (err) => {
         if (err) {
           console.error('❌ req.logIn Error:', err);
@@ -291,6 +312,11 @@ const PORT = process.env.AUTH_PORT || 8081;
 app.listen(PORT, () => {
   console.log(`\n🚀 NexVigil Auth Node Server [${process.env.ENVIRONMENT || 'dev'}]`);
   console.log(`📡 URL: http://localhost:${PORT}`);
-  console.log(`🔑 Callback: ${process.env.CALLBACK_URL || `http://localhost:${PORT}/auth/google/callback`}`);
+  
+  const localCallback = "http://localhost:8000/api/v1/auth/google/callback";
+  const prodCallback = process.env.PROD_CALLBACK_URL || "Using dynamic detection";
+  
+  console.log(`🔑 LOCAL Callback: ${localCallback}`);
+  console.log(`🔑 PROD  Callback: ${prodCallback}`);
   console.log(`🚪 Client Login: ${process.env.FRONTEND_LOGIN_URL || 'http://localhost:8080/login'}\n`);
 });

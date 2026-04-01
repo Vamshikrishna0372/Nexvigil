@@ -97,13 +97,22 @@ async def google_login(request: Request):
             headers = {
                 "X-Forwarded-Host": request.headers.get("host", request.url.hostname),
                 "X-Forwarded-Proto": request.headers.get("x-forwarded-proto", request.url.scheme),
+                "X-Forwarded-For": request.client.host if request.client else "127.0.0.1",
             }
+            print("🚀 [Backend] /google/login CALLED")
+            logger.info(f"🚀 [Auth Proxy] Login Initiated. origin={origin}, proxy_to={url}")
             response = await client.get(url, headers=headers)
             google_url = response.headers.get("location")
             if google_url:
-                return RedirectResponse(url=google_url, status_code=302)
+                logger.info(f"✅ [Auth Proxy] Redirecting to Google: {google_url[:100]}...")
+                final_response = RedirectResponse(url=google_url, status_code=302)
+                # Forward ALL set-cookie headers individually (Set-Cookie cannot be comma-separated)
+                for name, value in response.headers.multi_items():
+                    if name.lower() == "set-cookie":
+                        final_response.headers.append("set-cookie", value)
+                return final_response
         except Exception as e:
-            logger.error(f"Auth Proxy Error: {e}")
+            logger.error(f"❌ [Auth Proxy] Login Error: {e}")
         
     frontend_login = f"{origin}/login" if origin else f"{settings.FRONTEND_URL or 'http://localhost:5173'}/login"
     return RedirectResponse(
@@ -122,13 +131,17 @@ async def google_callback(request: Request):
                 "X-Forwarded-Host": request.headers.get("host", request.url.hostname),
                 "X-Forwarded-Proto": request.headers.get("x-forwarded-proto", request.url.scheme),
             }
+            print("🔄 [Backend] /google/callback CALLED")
+            logger.info(f"🔄 [Auth Proxy] Callback HIT. Query: {request.url.query[:50]}...")
             response = await client.get(url, headers=headers)
             redirect_target = response.headers.get("location")
             if redirect_target:
-                # We need to relay the cookie that Node tries to set back to the client
+                logger.info(f"✅ [Auth Proxy] Callback successful. Redirecting to: {redirect_target}")
+                # We need to relay ALL cookies that Node tries to set back to the client
                 final_response = RedirectResponse(url=redirect_target, status_code=302)
-                if "set-cookie" in response.headers:
-                    final_response.headers["set-cookie"] = response.headers["set-cookie"]
+                for name, value in response.headers.multi_items():
+                    if name.lower() == "set-cookie":
+                        final_response.headers.append("set-cookie", value)
                 return final_response
             
             # If no redirect is given, return the text
@@ -150,10 +163,17 @@ async def auth_user_proxy(request: Request):
             url = f"http://localhost:8081/auth/user"
             headers = {
                 "Cookie": request.headers.get("cookie", ""),
+                "Authorization": request.headers.get("authorization", ""),
                 "ngrok-skip-browser-warning": "true"
             }
             response = await client.get(url, headers=headers)
-            return JSONResponse(status_code=response.status_code, content=response.json())
+            
+            # Forward potential session tokens/cookies
+            final_response = JSONResponse(status_code=response.status_code, content=response.json())
+            for name, value in response.headers.multi_items():
+                if name.lower() == "set-cookie":
+                    final_response.headers.append("set-cookie", value)
+            return final_response
         except Exception as e:
             logger.error(f"Auth Proxy Error: {e}")
             return JSONResponse(status_code=503, content={"authenticated": False, "error": "Auth service unavailable"})
@@ -164,8 +184,12 @@ async def auth_logout_proxy(request: Request):
     async with httpx.AsyncClient() as client:
         try:
             url = f"http://localhost:8081/logout"
-            headers = {"Cookie": request.headers.get("cookie", "")}
+            headers = {
+                "Cookie": request.headers.get("cookie", ""),
+                "Authorization": request.headers.get("authorization", ""),
+            }
             response = await client.get(url, headers=headers)
+            
             # Redirect back to frontend login
             origin = request.headers.get("origin") or request.headers.get("referer", "")
             if origin:
@@ -174,7 +198,13 @@ async def auth_logout_proxy(request: Request):
                 origin = f"{parsed.scheme}://{parsed.netloc}"
             
             frontend_login = f"{origin}/login" if origin else f"{settings.FRONTEND_URL or 'http://localhost:5173'}/login"
-            return RedirectResponse(url=frontend_login, status_code=302)
+            final_response = RedirectResponse(url=frontend_login, status_code=302)
+            
+            # Forward cookie clearing headers
+            for name, value in response.headers.multi_items():
+                if name.lower() == "set-cookie":
+                    final_response.headers.append("set-cookie", value)
+            return final_response
         except Exception as e:
             logger.error(f"Auth Proxy Error: {e}")
             return RedirectResponse(url="/login", status_code=302)

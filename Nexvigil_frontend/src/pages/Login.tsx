@@ -21,12 +21,21 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  const { toast } = useToast();
+  const { login, isAuthenticated } = useAuth();
+ 
   useEffect(() => {
+    // If already authenticated, go to dashboard
+    if (isAuthenticated) {
+      navigate("/dashboard");
+      return;
+    }
+ 
     const params = new URLSearchParams(window.location.search);
     const errorParam = params.get("error");
     if (errorParam) {
       if (errorParam === "auth_proxy_down") {
-        setError("The authentication service is starting up or unavailable. Please try again in a few seconds.");
+        setError("The authentication service (Port 8081) was unavailable. It has now been started automatically. Please try again.");
       } else if (errorParam === "auth_failed") {
         setError("Google authentication failed. Please try again.");
       } else {
@@ -35,9 +44,7 @@ const Login = () => {
       // Clean URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, []);
-  const { toast } = useToast();
-  const { login } = useAuth();
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,14 +113,7 @@ const Login = () => {
               ))}
             </div>
 
-            {/* Demo credentials hint */}
-            <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/10">
-              <p className="text-xs font-semibold text-primary mb-2">Demo Credentials</p>
-              <div className="space-y-1 text-xs text-muted-foreground">
-                <p><span className="text-foreground font-medium">Admin:</span> admin@nexvigil.com / adminPassword123!</p>
-                <p><span className="text-foreground font-medium">User:</span> (Register a new account or use admin)</p>
-              </div>
-            </div>
+
           </motion.div>
 
           <div className="relative z-10">
@@ -210,14 +210,7 @@ const Login = () => {
                 <Link to="/register" className="text-primary hover:text-primary/80 font-medium transition-colors">Create one</Link>
               </p>
 
-              {/* Mobile demo credentials */}
-              <div className="lg:hidden mt-4 p-3 rounded-lg bg-primary/5 border border-primary/10">
-                <p className="text-xs font-semibold text-primary mb-1">Demo Credentials</p>
-                <div className="space-y-0.5 text-[11px] text-muted-foreground">
-                  <p><span className="text-foreground font-medium">Admin:</span> admin@nexvigil.com / adminPassword123!</p>
-                  <p><span className="text-foreground font-medium">User:</span> (Register a new account or use admin)</p>
-                </div>
-              </div>
+
             </div>
           </motion.div>
         </div>

@@ -50,8 +50,8 @@ const AlertDetails = () => {
   if (isLoading) return <LoadingState text="FORENSIC CORE LOADING..." fullPage />;
   if (error || !alert) return <div className="p-8 text-center">Alert not found or access denied.</div>;
 
-  const videoUrl = api.media.getVideoUrl(alert.video_path);
-  const screenshotUrl = api.media.getScreenshotUrl(alert.screenshot_path);
+  const videoUrl = api.media.getAlertVideoUrl(id!);
+  const screenshotUrl = api.media.getAlertScreenshotUrl(id!);
 
   return (
     <motion.div
@@ -126,18 +126,26 @@ const AlertDetails = () => {
                   if (ext === 'mp4' || ext === 'webm') {
                     return (
                       <video
+                        src={videoUrl}
                         controls
                         muted
                         playsInline
                         className="w-full h-full object-contain"
                         autoPlay={false}
                         preload="auto"
+                        crossOrigin="anonymous"
                         onError={(e) => {
-                          console.error("Video load error:", e);
+                          const video = e.target as HTMLVideoElement;
+                          console.error("Video load error details:", {
+                            error: video.error,
+                            code: video.error?.code,
+                            message: video.error?.message,
+                            src: video.src,
+                            type: video.type
+                          });
                           setHasVideoError(true);
                         }}
                       >
-                        <source src={videoUrl} type={`video/${ext === 'mp4' ? 'mp4' : 'webm'}`} />
                         Your browser does not support the video tag.
                       </video>
                     );
@@ -182,6 +190,7 @@ const AlertDetails = () => {
                   src={screenshotUrl}
                   alt="Detection Bounding Box"
                   className="w-full h-full object-contain"
+                  crossOrigin="anonymous"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = 'https://placehold.co/1280x720/18181b/a1a1aa?text=Frame+Capture+Unavailable';
                   }}

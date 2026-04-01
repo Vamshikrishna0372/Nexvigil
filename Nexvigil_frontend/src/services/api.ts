@@ -45,10 +45,10 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     const token = localStorage.getItem("nexvigil_token");
     const res = await fetch(`${API_BASE}${endpoint}`, {
       ...options,
+      credentials: "include", // Ensure cookies are sent (important for OAuth sessions)
       headers: {
         "Content-Type": "application/json",
-        // Required when backend is exposed via ngrok — prevents HTML interstitial page
-        // from being returned instead of JSON on first visit.
+        // Required when backend is exposed via ngrok
         "ngrok-skip-browser-warning": "true",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
@@ -105,10 +105,16 @@ export const api = {
 
   // Node.js Auth (Google OAuth)
   nodeAuth: {
-    getUser: () => fetch(`${AUTH_BASE}/user`, { 
-      credentials: "include",
-      headers: { "ngrok-skip-browser-warning": "true" }
-    }).then(res => res.json()),
+    getUser: () => {
+      const token = localStorage.getItem("nexvigil_token");
+      return fetch(`${AUTH_BASE}/user`, { 
+        credentials: "include",
+        headers: { 
+          "ngrok-skip-browser-warning": "true",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
+      }).then(res => res.json());
+    },
     logout: () => fetch(`${AUTH_BASE}/logout`, { 
       credentials: "include" 
     })
@@ -191,38 +197,34 @@ export const api = {
     unreadCount: () => request("/notifications/unread-count"),
   },
 
-  // Media (Static Access)
+  // Media (Secure & Static)
   media: {
     recordings: () => request("/media/recordings"),
-    // Point directly to StaticFiles mount at /media
+    // Point directly to secure endpoint at /api/v1/media/{id}/{type}
+    getAlertVideoUrl: (alertId: string) => {
+      const token = localStorage.getItem("nexvigil_token") || "";
+      return `${API_BASE}/media/${alertId}/video?token=${token}&ngrok-skip-browser-warning=true`;
+    },
+    getAlertScreenshotUrl: (alertId: string) => {
+      const token = localStorage.getItem("nexvigil_token") || "";
+      return `${API_BASE}/media/${alertId}/screenshot?token=${token}&ngrok-skip-browser-warning=true`;
+    },
+    // Legacy support (fallback)
     getVideoUrl: (pathOrUrl: string) => {
-      if (!pathOrUrl) return "";
-      // If it's already a full URL (returned by backend Point 7), return it
-      if (pathOrUrl.startsWith("http")) return pathOrUrl;
-
+      if (!pathOrUrl || pathOrUrl.startsWith("http")) return pathOrUrl || "";
       const base = API_BASE.replace(/\/api\/v1\/?$/, "");
+      const token = localStorage.getItem("nexvigil_token") || "";
       let cleanPath = pathOrUrl.startsWith("/") ? pathOrUrl.slice(1) : pathOrUrl;
-
-      // Ensure it starts with media/
-      if (!cleanPath.startsWith("media/")) {
-        cleanPath = `media/${cleanPath}`;
-      }
-
-      return `${base}/${cleanPath}${cleanPath.includes('?') ? '&' : '?'}ngrok-skip-browser-warning=true`;
+      if (!cleanPath.startsWith("media/")) cleanPath = `media/${cleanPath}`;
+      return `${base}/${cleanPath}?token=${token}&ngrok-skip-browser-warning=true`;
     },
     getScreenshotUrl: (pathOrUrl: string) => {
-      if (!pathOrUrl) return "";
-      if (pathOrUrl.startsWith("http")) return pathOrUrl;
-
+      if (!pathOrUrl || pathOrUrl.startsWith("http")) return pathOrUrl || "";
       const base = API_BASE.replace(/\/api\/v1\/?$/, "");
+      const token = localStorage.getItem("nexvigil_token") || "";
       let cleanPath = pathOrUrl.startsWith("/") ? pathOrUrl.slice(1) : pathOrUrl;
-
-      // Ensure it starts with media/
-      if (!cleanPath.startsWith("media/")) {
-        cleanPath = `media/${cleanPath}`;
-      }
-
-      return `${base}/${cleanPath}${cleanPath.includes('?') ? '&' : '?'}ngrok-skip-browser-warning=true`;
+      if (!cleanPath.startsWith("media/")) cleanPath = `media/${cleanPath}`;
+      return `${base}/${cleanPath}?token=${token}&ngrok-skip-browser-warning=true`;
     },
     getToken: () => localStorage.getItem("nexvigil_token") || ""
   },
@@ -242,10 +244,9 @@ export const api = {
 
   // AI Assistant
   ai: {
-    chat: (query: string) => request<{ answer: string; intent: string; data?: any }>("/ai/chat", { 
+    chat: (query: string, history: any[] = []) => request<{ answer: string; intent: string; data?: any }>("/ai/chat", { 
       method: "POST", 
-      body: JSON.stringify({ query }) 
+      body: JSON.stringify({ query, history }) 
     }),
   }
 };
-

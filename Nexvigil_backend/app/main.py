@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, status
+# Triggering reload...
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
@@ -7,6 +8,7 @@ import asyncio
 import os
 import platform
 import subprocess
+import socket
 from datetime import datetime, timedelta
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -62,29 +64,43 @@ async def lifespan(app: FastAPI):
     logger.info("Starting up application...")
     
     # [ROBUSTNESS] Ensure Node Auth Server is running
-    import socket
+    auth_port = int(os.getenv("AUTH_PORT", 8081))
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            if s.connect_ex(('localhost', 8081)) != 0:
-                logger.info("Auth Server (8081) not detected. Launching in background...")
-                # Search for auth_server.js in current directory
-                server_path = os.path.join(os.getcwd(), "auth_server.js")
+            s.settimeout(1)
+            if s.connect_ex(('127.0.0.1', auth_port)) != 0:
+                logger.info(f"Auth Server ({auth_port}) not detected. Attempting to launch...")
+                # Path detection: Look in backend root
+                # Since app/main.py is in app/ folder, we need to go up one level if we are there
+                # But subprocess uses CWD, so let's be explicit
+                backend_root = os.getcwd()
+                server_path = os.path.join(backend_root, "auth_server.js")
+                
+                if not os.path.exists(server_path):
+                    # Try parent if we are in app folder
+                    parent = os.path.dirname(backend_root)
+                    if os.path.exists(os.path.join(parent, "auth_server.js")):
+                        backend_root = parent
+                        server_path = os.path.join(backend_root, "auth_server.js")
+
                 if os.path.exists(server_path):
+                    logger.info(f"Found auth_server.js at {server_path}. Starting Node process...")
                     if platform.system() == "Windows":
                         # Use 'start' to run in a separate window or background
-                        subprocess.Popen("node auth_server.js", shell=True, cwd=os.getcwd())
+                        # CREATE_NO_WINDOW = 0x08000000
+                        subprocess.Popen(f"node auth_server.js", shell=True, cwd=backend_root)
                     else:
-                        subprocess.Popen(["node", "auth_server.js"], cwd=os.getcwd())
+                        subprocess.Popen(["node", "auth_server.js"], cwd=backend_root)
+                    logger.info("✅ Node Auth Server launch command emitted.")
                 else:
-                    logger.warning("auth_server.js not found in current directory. Skipping auto-start.")
+                    logger.warning(f"❌ auth_server.js NOT FOUND at {server_path}. Social login will fail.")
             else:
-                logger.info("Auth Server (8081) is already running.")
+                logger.info(f"✅ Auth Server ({auth_port}) is already alive.")
     except Exception as e:
-        logger.warning(f"Could not auto-start Auth Server: {e}")
-
+        logger.warning(f"⚠️ Could not verify/start Auth Server: {e}")
+ 
     try:
         # Create media directories in 'uploads' as requested by user
-        import os
         from pathlib import Path
         media_root = Path(settings.MEDIA_DIR)
         media_root.mkdir(parents=True, exist_ok=True)
@@ -158,15 +174,10 @@ async def global_exception_handler(request: Request, exc: Exception):
     # Include CORS headers so browser doesn't block error responses
     origin = request.headers.get("origin", "")
     headers = {}
-    if settings.ENVIRONMENT == "development" and origin:
-        headers["Access-Control-Allow-Origin"] = origin
-    elif origin:
-        # Check if origin is in explicit list or matches Vercel pattern
-        is_allowed = origin in settings.all_cors_origins or origin.endswith(".vercel.app")
-        if is_allowed:
+    if origin:
+        if settings.ENVIRONMENT == "development" or origin in settings.all_cors_origins or origin.endswith(".vercel.app"):
             headers["Access-Control-Allow-Origin"] = origin
             headers["Access-Control-Allow-Credentials"] = "true"
-            # Important: Allow the ngrok skip header to be exposed/used
             headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, ngrok-skip-browser-warning"
         
     return JSONResponse(

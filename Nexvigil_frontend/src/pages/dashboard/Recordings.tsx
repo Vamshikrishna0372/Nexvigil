@@ -184,7 +184,7 @@ const Recordings = () => {
                   </div>
                   <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-bold">
                     <Calendar className="w-3.5 h-3.5 opacity-60" />
-                    {format(new Date(r.timestamp), "MMM dd, yyyy • HH:mm:ss")}
+                    {format(new Date(r.created_at || r.timestamp || Date.now()), "MMM dd, yyyy • HH:mm:ss")}
                   </div>
                 </div>
 

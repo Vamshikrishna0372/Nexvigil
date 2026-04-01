@@ -115,7 +115,8 @@ class AlertService:
                   query["owner_id"] = user.id
             
         if severity:
-            query["severity"] = severity
+            # Case-insensitive match for the AI-detected severity levels
+            query["severity"] = {"$regex": f"^{severity}$", "$options": "i"}
         if camera_id:
             query["camera_id"] = camera_id
         if acknowledged is not None:
@@ -283,5 +284,22 @@ class AlertService:
             today=data.get("today", 0),
             unacknowledged=data.get("unacknowledged", 0)
         )
+
+    async def get_filtered_count(self, user: UserResponse, severity: Optional[str] = None, time_range: Optional[str] = None) -> int:
+        query = {}
+        if user.role != "admin":
+             if user.organization_id:
+                  query["organization_id"] = user.organization_id
+             else:
+                  query["owner_id"] = user.id
+                  
+        if severity:
+            query["severity"] = {"$regex": f"^{severity}$", "$options": "i"}
+            
+        if time_range == "today":
+            start_of_day = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+            query["created_at"] = {"$gte": start_of_day}
+            
+        return await db.client[db.db.name][self.collection_name].count_documents(query)
 
 alert_service = AlertService()

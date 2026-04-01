@@ -34,8 +34,11 @@ async def ai_chat_assistant(
     cursor = db.db.alerts.find(query_filter).sort("created_at", -1).limit(50)
     recent_alerts = await cursor.to_list(length=50)
 
+    # Optional conversation history for context (Alex-like "it" resolution)
+    history = payload.get("history", [])
+
     # Process via AI Assistant (Now using Groq Controller)
-    result = await ai_assistant_service.ask_ai(query, current_user, recent_alerts)
+    result = await ai_assistant_service.ask_ai(query, current_user, recent_alerts, history)
     if not result:
         return BaseResponse(
             success=False,
@@ -43,23 +46,8 @@ async def ai_chat_assistant(
             data={"answer": "Check API status.", "intent": "QUESTION"}
         )
 
-    # Check for "RULE" intent and store if valid
-    if result.get("intent") == "RULE":
-        rule_data = result.get("data")
-        if rule_data:
-            # Simple direct insertion for AI-generated rules
-            try:
-                await db.db.rules.insert_one({
-                    **rule_data,
-                    "owner_id": current_user.id,
-                    "organization_id": current_user.organization_id if hasattr(current_user, 'organization_id') else None,
-                    "is_active": True,
-                    "created_at": datetime.now()
-                })
-                result["rule_status"] = "applied"
-            except Exception as e:
-                logger.error(f"Rule Storage Error: {e}")
-                result["rule_status"] = "failed_to_save"
+    # Result is now handled directly by the AI Controller (AIAssistantService)
+    # The response contains the success message and status code.
 
     return BaseResponse(
         success=True,

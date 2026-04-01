@@ -92,7 +92,8 @@ const AIChatAssistant = () => {
 
     try {
       // --- REAL RESPONSE FLOW ---
-      const response: any = await api.ai.chat(userMsg);
+      // We send the current message history to allow the AI to resolve context (e.g. "it", "them")
+      const response: any = await api.ai.chat(userMsg, messages);
       const chatData = response.data;
       
       if (chatData && chatData.answer) {

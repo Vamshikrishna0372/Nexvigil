@@ -113,6 +113,15 @@ class CameraService:
             return None
         return await db.client[db.db.name][self.collection_name].find_one({"_id": oid})
 
+    async def get_camera_by_name(self, name: str, user: UserResponse) -> Optional[dict]:
+        query = {"camera_name": {"$regex": f"^{name}$", "$options": "i"}}
+        if user.role != "admin":
+            if user.organization_id:
+                query["organization_id"] = user.organization_id
+            else:
+                query["owner_id"] = user.id
+        return await db.client[db.db.name][self.collection_name].find_one(query)
+
     async def get_cameras(self, user: UserResponse, skip: int = 0, limit: int = 20, status_filter: Optional[str] = None) -> List[CameraResponse]:
         query = {}
         # Multi-tenancy check
@@ -258,6 +267,20 @@ class CameraService:
              
         await db.client[db.db.name][self.collection_name].delete_one({"_id": ObjectId(camera_id)})
         return {"message": "Camera deleted successfully"}
+
+    async def turn_off_all(self, user: UserResponse):
+        query = {}
+        if user.role != "admin":
+            if user.organization_id:
+                query["organization_id"] = user.organization_id
+            else:
+                query["owner_id"] = user.id
+        
+        result = await db.client[db.db.name][self.collection_name].update_many(
+            query,
+            {"$set": {"status": "inactive", "updated_at": datetime.now(timezone.utc)}}
+        )
+        return {"message": f"Successfully turned off {result.modified_count} cameras", "count": result.modified_count}
 
     async def update_health(self, camera_id: str, health_status: str, fps: float = 0.0, telemetry: Optional[dict] = None):
          # Internal

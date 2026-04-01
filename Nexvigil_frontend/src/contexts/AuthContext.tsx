@@ -48,29 +48,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (authSuccess === "true" && dataParam) {
           try {
-            const parsedData = JSON.parse(decodeURIComponent(dataParam));
-            const userData = parsedData.user || parsedData; // Fallback for old structure
+            const parsedStr = decodeURIComponent(dataParam);
+            const parsedData = JSON.parse(parsedStr);
+            console.log('✅ Auth success param detected, parsing data...');
+
+            // The token can be in 'token' or 'access_token' depending on the auth source
+            const authToken = parsedData.token || parsedData.access_token || parsedData.accessToken;
+            const userData = parsedData.user || parsedData; 
             
-            console.log('✅ Auth Handover SUCCESS:', userData.displayName || userData.name);
-            
-            const googleUser: AuthUser = {
-              id: userData.id || userData._id || "google-user",
-              name: userData.displayName || userData.name || "Google User",
-              email: userData.email || "",
-              avatar: userData.profilePicture || userData.avatar || "",
-              role: (userData.role as UserRole) || "user"
-            };
-            
-            setUser(googleUser);
-            localStorage.setItem("nexvigil_user", JSON.stringify(googleUser));
-            localStorage.setItem("nexvigil_token", parsedData.token);
-            
-            // Clean URL and finalize loading
-            window.history.replaceState({}, document.title, window.location.pathname);
-            setLoading(false);
-            return;
+            if (authToken) {
+              console.log('🔑 Storing new auth token in localStorage');
+              localStorage.setItem("nexvigil_token", authToken);
+              
+              const googleUser: AuthUser = {
+                id: userData.id || userData._id || "google-user",
+                name: userData.displayName || userData.name || "Google User",
+                email: userData.email || "",
+                avatar: userData.profilePicture || userData.avatar || "",
+                role: (userData.role as UserRole) || "user"
+              };
+              
+              setUser(googleUser);
+              localStorage.setItem("nexvigil_user", JSON.stringify(googleUser));
+              
+              // Clean URL and finalize loading
+              window.history.replaceState({}, document.title, window.location.pathname);
+              setLoading(false);
+              return;
+            } else {
+              console.warn('⚠️ auth_success was true but no token found in payload');
+            }
           } catch (e) {
-            console.error("Auth handover failed:", e);
+            console.error("❌ Auth handover failed:", e);
           }
         }
 

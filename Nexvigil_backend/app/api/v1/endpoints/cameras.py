@@ -117,6 +117,52 @@ async def toggle_camera_status(
         data=serialize_mongo(camera)
     )
 
+@router.post("/off-all")
+async def turn_off_all_cameras(
+    current_user: UserResponse = Depends(deps.get_current_active_user)
+):
+    """
+    Turn off all cameras.
+    """
+    result = await camera_service.turn_off_all(current_user)
+    return BaseResponse(
+        success=True,
+        message=result.get("message"),
+        data=result
+    )
+
+@router.post("/{camera_id}/off")
+async def turn_off_camera_post(
+    camera_id: str,
+    current_user: UserResponse = Depends(deps.get_current_active_user)
+):
+    """
+    Turn off specific camera via POST.
+    """
+    update = CameraUpdate(status="inactive")
+    camera = await camera_service.update_camera(camera_id, update, current_user)
+    return BaseResponse(
+        success=True,
+        message="Camera turned off",
+        data=serialize_mongo(camera)
+    )
+
+@router.post("/{camera_id}/on")
+async def turn_on_camera_post(
+    camera_id: str,
+    current_user: UserResponse = Depends(deps.get_current_active_user)
+):
+    """
+    Turn on specific camera via POST.
+    """
+    update = CameraUpdate(status="active")
+    camera = await camera_service.update_camera(camera_id, update, current_user)
+    return BaseResponse(
+        success=True,
+        message="Camera turned on",
+        data=serialize_mongo(camera)
+    )
+
 @router.patch("/{camera_id}/health", status_code=status.HTTP_200_OK)
 async def update_camera_health_patch(
     camera_id: str,
