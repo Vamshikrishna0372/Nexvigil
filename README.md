@@ -1,246 +1,198 @@
-# 🛡️ Nexvigil – AI-Powered Intelligent Surveillance System
+# Nexvigil -- AI-Powered Intelligent Surveillance System
 
-Nexvigil is a full-stack **AI-driven surveillance platform** designed to enhance traditional CCTV monitoring using **computer vision and real-time analytics**.
-The system detects suspicious activities from live video streams using deep learning models and automatically generates **alerts with visual evidence (images & videos)**.
+Nexvigil is an **AI & Machine Learning-powered Intelligent Surveillance
+System** that modernizes traditional CCTV monitoring using **YOLOv8**,
+**OpenCV**, and a **FastAPI** backend with a modern **React** dashboard.
 
-🚀 **Live Frontend:** [https://nexvigil.vercel.app/](https://nexvigil.vercel.app/)
+The platform performs real-time object detection, generates intelligent
+alerts with visual evidence, provides analytics, and includes an **AI
+Chatbot** capable of interacting with the entire surveillance system
+using natural language.
 
----
+> **🌐 Live Demo:** https://nexvigil.vercel.app/\
+> **⚠️ Demo Availability:** The live frontend is publicly accessible.
+> Full system functionality is **available upon request**, as the
+> backend, AI engine, and camera services must be running for real-time
+> monitoring.
 
-## ✨ Features
+------------------------------------------------------------------------
 
-* 🎯 **Real-Time Object Detection**
+## Features
 
-  * Uses YOLOv8 for detecting people, objects, and anomalies
-* 📡 **Live Video Monitoring**
+-   Real-time AI surveillance monitoring
+-   YOLOv8-based object detection
+-   Multi-camera live monitoring
+-   Intelligent alert generation
+-   Evidence Vault for images & videos
+-   Incident Timeline
+-   Analytics Dashboard
+-   Rule-Based Detection Engine
+-   AI Chatbot for complete surveillance interaction
+-   Camera management
+-   Secure authentication
+-   Responsive dashboard
 
-  * Stream live camera feed directly in dashboard
-* 🚨 **Automated Alert System**
+### AI Chatbot Capabilities
 
-  * Generates alerts with captured images & video clips
-* 📸 **Evidence Management**
+The integrated AI Chatbot allows users to interact with the surveillance
+platform using natural language.
 
-  * Stores and displays images/videos for each alert
-* ⚙️ **Rule-Based Detection Engine**
+Users can: - View total alerts - Check today's alerts - View incident
+details - Monitor camera status - Access analytics insights - Manage
+cameras - Retrieve surveillance information - Navigate system modules
 
-  * Configure conditions for triggering alerts
-* 📊 **Analytics Dashboard**
+------------------------------------------------------------------------
 
-  * Monitor system activity and detection statistics
-* 🔔 **Smart Notifications**
+## Tech Stack
 
-  * Professional alert system with severity levels
-* 📱 **Responsive UI**
+### Frontend
 
-  * Works across desktop, tablet, and mobile devices
-* 🌐 **Remote Access via Secure Tunnel**
+-   React.js
+-   TypeScript
+-   Tailwind CSS
+-   Vite
 
-  * Uses ngrok to expose local backend securely
+### Backend
 
----
+-   FastAPI
+-   Python
+-   REST APIs
+-   Uvicorn
 
-## 🛠️ Tech Stack
+### AI & Machine Learning
 
-### 🎨 Frontend
+-   YOLOv8
+-   OpenCV
 
-* React.js
-* TypeScript
-* Tailwind CSS
-* Vite
+### Database
 
-### ⚙️ Backend
+-   MongoDB
 
-* FastAPI (Python)
-* REST APIs
-* Uvicorn
+### Deployment
 
-### 🤖 AI & Computer Vision
+-   Vercel (Frontend)
+-   ngrok (Backend Tunnel)
 
-* YOLOv8 (Ultralytics)
-* OpenCV
-* Real-time video processing
+------------------------------------------------------------------------
 
-### 🗄️ Database
+## Project Structure
 
-* MongoDB
-
-### 🔐 Server Bridge / Networking
-
-* ngrok (secure tunneling for local backend exposure)
-
-### 🎬 UI & Components
-
-* Shadcn UI (Radix UI)
-* Custom dashboard components
-
-### 🌐 Deployment
-
-* Vercel (Frontend)
-
----
-
-## 📁 Project Structure
-
-```text
+``` text
 Nexvigil/
-├── Nexvigil_frontend/        # React frontend (Vercel deployed)
-│   ├── src/
-│   │   ├── components/       # UI components
-│   │   ├── pages/            # Dashboard pages
-│   │   ├── services/         # API integration
-│   │   ├── contexts/         # State management
-│   │   └── App.tsx
-│   ├── public/
-│   ├── package.json
-│   └── vite.config.ts
-│
-├── Nexvigil_backend/         # FastAPI backend
+├── Nexvigil_frontend/
+├── Nexvigil_backend/
 │   ├── app/
-│   │   ├── api/              # API routes
-│   │   ├── services/         # Business logic
-│   │   ├── models/           # Database models
-│   │   ├── schemas/          # Pydantic schemas
-│   │   └── core/             # Config & settings
-│   ├── media/                # Captured images & videos
-│   ├── ai_agent/             # AI detection logic
-│   └── main.py               # Backend entry point
+│   ├── ai_agent/
+│   ├── media/
+│   └── main.py
 ```
 
----
+------------------------------------------------------------------------
 
-## 🚀 Getting Started
+## Getting Started
 
-### 1️⃣ Clone Repository
+### Clone Repository
 
-```bash
+``` bash
 git clone https://github.com/Vamshikrishna0372/Nexvigil.git
 cd Nexvigil
 ```
 
----
+### Backend
 
-### 2️⃣ Setup Backend
-
-```bash
+``` bash
 cd Nexvigil_backend
 pip install -r requirements.txt
+uvicorn main:app --reload
 ```
 
-Create `.env` file:
+### AI Engine
 
-```env
-MONGO_URI=mongodb://localhost:27017/nexvigil
-SECRET_KEY=your_secret_key
-NGROK_URL=https://your-ngrok-url
-```
-
-Run backend:
-
-```bash
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
-
----
-
-### 3️⃣ Start AI Detection Engine
-
-```bash
+``` bash
 python ai_agent.py
 ```
 
----
+### Frontend
 
-### 4️⃣ Start ngrok (Server Bridge)
-
-```bash
-ngrok http 8000
-```
-
-Copy HTTPS URL and update frontend env.
-
----
-
-### 5️⃣ Setup Frontend
-
-```bash
+``` bash
 cd Nexvigil_frontend
 npm install
-```
-
-Create `.env`:
-
-```env
-VITE_API_BASE_URL=https://your-ngrok-url
-```
-
-Run frontend locally:
-
-```bash
 npm run dev
 ```
 
----
+------------------------------------------------------------------------
 
-## 🔄 System Architecture
+## System Architecture
 
-```text
-User Device (Mobile/Laptop)
-        ↓
-Vercel Frontend (React)
-        ↓
-ngrok Secure Tunnel (HTTPS)
-        ↓
-Local Backend (FastAPI)
-        ↓
-AI Engine (YOLOv8 + OpenCV)
-        ↓
-MongoDB + Media Storage
+``` text
+User
+   │
+React Frontend (Vercel)
+   │
+FastAPI Backend
+   │
+YOLOv8 + OpenCV
+   │
+MongoDB + Evidence Storage
 ```
 
----
+------------------------------------------------------------------------
 
-## 📸 Media & Streaming
+## Screenshots
 
-* Images and videos are captured and stored in `/media`
-* Live stream served using `StreamingResponse`
-* Accessible via ngrok public URL
+-   Landing Page
+-   Login
+-   Dashboard
+-   Live Monitoring
+-   Camera Grid
+-   Alerts
+-   Incident Timeline
+-   Evidence Vault
+-   Analytics
+-   Rule Engine
+-   Camera Management
+-   AI Chatbot
 
----
+------------------------------------------------------------------------
 
-## 🎯 Key Highlights
+## Key Highlights
 
-* Full-stack AI application with real-time processing
-* Integration of deep learning model into web system
-* Secure backend exposure using ngrok
-* Scalable modular architecture
-* Production-ready frontend deployment
+-   AI & Machine Learning powered surveillance platform
+-   Full-stack architecture using React and FastAPI
+-   Real-time object detection using YOLOv8
+-   Intelligent AI Chatbot for complete system interaction
+-   Analytics-driven monitoring
+-   Modular and scalable architecture
 
----
+------------------------------------------------------------------------
 
-## ⚠️ Important Notes
+## Future Enhancements
 
-* Backend runs locally → requires ngrok for remote access
-* ngrok URL changes on restart (free version)
-* System works only when backend + AI agent are running
+-   Face Recognition
+-   Number Plate Recognition (ANPR)
+-   Cloud Deployment
+-   Mobile Application
+-   Predictive AI Analytics
 
----
+------------------------------------------------------------------------
 
-## 🤝 Connect With Me
+## Connect
 
-* 💻 GitHub: https://github.com/Vamshikrishna0372
-* 🔗 LinkedIn: https://www.linkedin.com/in/vamshi-krishna-nagula-174b6833a/
-* 📧 Email: [nagulavamshi1453@gmail.com](mailto:nagulavamshi1453@gmail.com)
+-   **GitHub:** https://github.com/Vamshikrishna0372
+-   **LinkedIn:**
+    https://www.linkedin.com/in/vamshi-krishna-nagula-174b6833a/
+-   **Portfolio:** https://nexvigil.vercel.app/
+-   **Email:** nagulavamshi1453@gmail.com
 
----
+------------------------------------------------------------------------
 
-## 📄 License
+## License
 
-This project is for educational and portfolio purposes.
+This project is developed for educational, research, and portfolio
+purposes.
 
----
+------------------------------------------------------------------------
 
-<div align="center">
-
-🚀 Built with passion by **Vamshi Krishna Nagula**
-
-</div>
+::: {align="center"}
+**Built with ❤️ by Vamshi Krishna Nagula**
+:::
